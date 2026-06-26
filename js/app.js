@@ -536,12 +536,11 @@ class PriismaTv {
     getHDSources(imdbId, type) {
         const isMovie = type === 'movie';
         return [
-            { name: 'Vidplay (HD)', url: isMovie ? `https://vidsrc.xyz/embed/movie/${imdbId}` : `https://vidsrc.xyz/embed/tv/${imdbId}/1/1` },
-            { name: 'Vidsrc (1080p)', url: isMovie ? `https://vidsrc.to/embed/movie/${imdbId}` : `https://vidsrc.to/embed/tv/${imdbId}/1/1` },
-            { name: 'Multi (4K)', url: isMovie ? `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` : `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=1&e=1` },
-            { name: 'AutoEmbed', url: isMovie ? `https://player.autoembed.cc/embed/movie/${imdbId}` : `https://player.autoembed.cc/embed/tv/${imdbId}/1/1` },
-            { name: '2Embed', url: isMovie ? `https://www.2embed.cc/embed/${imdbId}` : `https://www.2embed.cc/embedtv/${imdbId}&s=1&e=1` },
-            { name: 'YTS (Torrent)', url: isMovie ? `https://yifysearch.com/search/${encodeURIComponent(this.currentDetailItem?.title || '')}` : null },
+            { name: '4K Ultra HD', url: isMovie ? `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` : `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=1&e=1` },
+            { name: '1080p HD', url: isMovie ? `https://vidsrc.xyz/embed/movie/${imdbId}` : `https://vidsrc.xyz/embed/tv/${imdbId}/1/1` },
+            { name: '1080p (Alt)', url: isMovie ? `https://vidsrc.to/embed/movie/${imdbId}` : `https://vidsrc.to/embed/tv/${imdbId}/1/1` },
+            { name: '1080p Fast', url: isMovie ? `https://player.autoembed.cc/embed/movie/${imdbId}` : `https://player.autoembed.cc/embed/tv/${imdbId}/1/1` },
+            { name: 'YTS 1080p/4K', url: isMovie ? `https://yifysearch.com/search/${encodeURIComponent(this.currentDetailItem?.title || '')}` : null },
         ].filter(s => s.url !== null);
     }
 
