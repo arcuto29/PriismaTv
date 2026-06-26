@@ -740,6 +740,28 @@ body {
 }
 .video-player-close:hover { background: var(--accent-primary); }
 
+.video-source-bar {
+    position: absolute; top: 20px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 8px; z-index: 10;
+    background: rgba(0,0,0,0.8);
+    padding: 8px 16px; border-radius: var(--radius-full);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.video-source-bar button {
+    padding: 6px 14px; border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent; color: var(--text-secondary);
+    font-size: 0.75rem; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: var(--transition);
+}
+.video-source-bar button:hover { color: white; border-color: var(--accent-primary); }
+.video-source-bar button.active {
+    background: var(--accent-gradient); color: white;
+    border-color: transparent;
+}
+
 /* ═══════ RESPONSIVE ═══════ */
 @media (max-width: 1200px) {
     .admin-container { grid-template-columns: 1fr; }

@@ -485,28 +485,72 @@ class PriismaTv {
         }
 
         const url = this.convertToEmbed(item.video);
-        this.launchPlayer(url);
+        
+        // If the URL is a vidsrc/embed source, extract IMDB ID for multi-source
+        const imdbMatch = url.match(/(?:embed\/(?:movie|tv)\/)?(tt\d+)/);
+        if (imdbMatch) {
+            const imdbId = imdbMatch[1];
+            const type = item.type === 'movie' ? 'movie' : 'tv';
+            this.launchPlayer(url, imdbId, type);
+        } else {
+            this.launchPlayer(url);
+        }
     }
 
-    launchPlayer(url) {
+    launchPlayer(url, imdbId = null, type = 'movie') {
         const playerContainer = document.getElementById('videoPlayer');
         const playerContent = document.getElementById('videoPlayerContent');
+        const sourceBar = document.getElementById('videoSourceBar');
 
-        if (this.isYouTubeUrl(url)) {
-            const videoId = this.getYouTubeId(url);
-            playerContent.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;"></iframe>`;
-        } else if (this.isVimeoUrl(url)) {
-            const videoId = url.split('/').pop();
-            playerContent.innerHTML = `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;"></iframe>`;
-        } else if (url.match(/\.(mp4|webm|ogg|mkv)(\?|$)/i)) {
-            playerContent.innerHTML = `<video controls autoplay style="width:100%;height:100%;background:#000;"><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
+        // If we have an IMDB ID, show source switcher with multiple HD providers
+        if (imdbId) {
+            const sources = this.getHDSources(imdbId, type);
+            sourceBar.innerHTML = sources.map((s, i) => 
+                `<button class="${i === 0 ? 'active' : ''}" onclick="app.switchSource('${s.url}', this)">${s.name}</button>`
+            ).join('');
+            sourceBar.style.display = 'flex';
+            // Load first source
+            playerContent.innerHTML = `<iframe src="${sources[0].url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen scrolling="no" style="width:100%;height:100%;border:none;"></iframe>`;
         } else {
-            playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen scrolling="no" style="width:100%;height:100%;border:none;"></iframe>`;
+            sourceBar.style.display = 'none';
+            // Direct URL handling
+            if (this.isYouTubeUrl(url)) {
+                const videoId = this.getYouTubeId(url);
+                playerContent.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;"></iframe>`;
+            } else if (this.isVimeoUrl(url)) {
+                const videoId = url.split('/').pop();
+                playerContent.innerHTML = `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;"></iframe>`;
+            } else if (url.match(/\.(mp4|webm|ogg|mkv)(\?|$)/i)) {
+                playerContent.innerHTML = `<video controls autoplay style="width:100%;height:100%;background:#000;"><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
+            } else {
+                playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen scrolling="no" style="width:100%;height:100%;border:none;"></iframe>`;
+            }
         }
 
         playerContainer.classList.add('active');
         document.body.style.overflow = 'hidden';
         this.closeModal();
+    }
+
+    // Multiple HD 1080p+ sources - if one has ads or doesn't work, click another
+    getHDSources(imdbId, type) {
+        const isMovie = type === 'movie';
+        return [
+            { name: 'Server 1 (HD)', url: isMovie ? `https://vidsrc.xyz/embed/movie/${imdbId}` : `https://vidsrc.xyz/embed/tv/${imdbId}/1/1` },
+            { name: 'Server 2 (1080p)', url: isMovie ? `https://vidsrc.to/embed/movie/${imdbId}` : `https://vidsrc.to/embed/tv/${imdbId}/1/1` },
+            { name: 'Server 3 (4K)', url: isMovie ? `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` : `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=1&e=1` },
+            { name: 'Server 4', url: isMovie ? `https://www.2embed.cc/embed/${imdbId}` : `https://www.2embed.cc/embedtv/${imdbId}&s=1&e=1` },
+            { name: 'Server 5 (Fast)', url: isMovie ? `https://player.autoembed.cc/embed/movie/${imdbId}` : `https://player.autoembed.cc/embed/tv/${imdbId}/1/1` },
+        ];
+    }
+
+    switchSource(url, btn) {
+        // Update active button
+        document.querySelectorAll('.video-source-bar button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // Switch iframe
+        const playerContent = document.getElementById('videoPlayerContent');
+        playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen scrolling="no" style="width:100%;height:100%;border:none;"></iframe>`;
     }
 
     // Auto-find streaming link when no video URL is saved
@@ -541,19 +585,19 @@ class PriismaTv {
                 return;
             }
 
-            // Generate streaming URL - using cleaner sources with fewer ads
+            // Generate streaming URL - HD 1080p+ sources
             const streamUrl = searchType === 'movie'
-                ? `https://vidsrc.icu/embed/movie/${imdbId}`
-                : `https://vidsrc.icu/embed/tv/${imdbId}/1/1`;
+                ? `https://vidsrc.xyz/embed/movie/${imdbId}`
+                : `https://vidsrc.xyz/embed/tv/${imdbId}/1/1`;
 
             // Save it to the item so it doesn't have to look it up again
             item.video = streamUrl;
             item.imdbId = imdbId;
             this.saveContent();
 
-            // Play it
-            this.launchPlayer(streamUrl);
-            this.showToast('Stream found! Playing now...', 'success');
+            // Play it with multi-source HD selector
+            this.launchPlayer(streamUrl, imdbId, searchType);
+            this.showToast('HD stream found! Switch servers if needed.', 'success');
 
         } catch (err) {
             this.showToast('Error finding stream. Check your connection.', 'error');
@@ -749,10 +793,10 @@ class PriismaTv {
                     // Use ad-free/minimal-ad embed sources
                     // vidsrc.icu is cleaner with fewer popups
                     const streamUrl = type === 'movie'
-                        ? `https://vidsrc.icu/embed/movie/${imdbId}`
-                        : `https://vidsrc.icu/embed/tv/${imdbId}/1/1`;
+                        ? `https://vidsrc.xyz/embed/movie/${imdbId}`
+                        : `https://vidsrc.xyz/embed/tv/${imdbId}/1/1`;
                     document.getElementById('contentVideo').value = streamUrl;
-                    this.showToast('Streaming link auto-generated! Full movie ready to watch.', 'success');
+                    this.showToast('HD streaming link generated! 1080p+ quality.', 'success');
                 } else {
                     this.showToast('Poster filled! Add a streaming link manually if needed.', 'info');
                 }
