@@ -536,18 +536,35 @@ class PriismaTv {
     getHDSources(imdbId, type) {
         const isMovie = type === 'movie';
         return [
-            { name: 'Server 1 (HD)', url: isMovie ? `https://vidsrc.xyz/embed/movie/${imdbId}` : `https://vidsrc.xyz/embed/tv/${imdbId}/1/1` },
-            { name: 'Server 2 (1080p)', url: isMovie ? `https://vidsrc.to/embed/movie/${imdbId}` : `https://vidsrc.to/embed/tv/${imdbId}/1/1` },
-            { name: 'Server 3 (4K)', url: isMovie ? `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` : `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=1&e=1` },
-            { name: 'Server 4', url: isMovie ? `https://www.2embed.cc/embed/${imdbId}` : `https://www.2embed.cc/embedtv/${imdbId}&s=1&e=1` },
-            { name: 'Server 5 (Fast)', url: isMovie ? `https://player.autoembed.cc/embed/movie/${imdbId}` : `https://player.autoembed.cc/embed/tv/${imdbId}/1/1` },
-        ];
+            { name: 'Vidplay (HD)', url: isMovie ? `https://vidsrc.xyz/embed/movie/${imdbId}` : `https://vidsrc.xyz/embed/tv/${imdbId}/1/1` },
+            { name: 'Vidsrc (1080p)', url: isMovie ? `https://vidsrc.to/embed/movie/${imdbId}` : `https://vidsrc.to/embed/tv/${imdbId}/1/1` },
+            { name: 'Multi (4K)', url: isMovie ? `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` : `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=1&e=1` },
+            { name: 'AutoEmbed', url: isMovie ? `https://player.autoembed.cc/embed/movie/${imdbId}` : `https://player.autoembed.cc/embed/tv/${imdbId}/1/1` },
+            { name: '2Embed', url: isMovie ? `https://www.2embed.cc/embed/${imdbId}` : `https://www.2embed.cc/embedtv/${imdbId}&s=1&e=1` },
+            { name: 'YTS (Torrent)', url: isMovie ? `https://yts.mx/movies/${this.titleToSlug(this.currentDetailItem?.title)}-${this.currentDetailItem?.year || ''}` : null },
+        ].filter(s => s.url !== null);
+    }
+
+    titleToSlug(title) {
+        if (!title) return '';
+        return title.toLowerCase()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .trim();
     }
 
     switchSource(url, btn) {
         // Update active button
         document.querySelectorAll('.video-source-bar button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        
+        // If it's a YTS/torrent link, open in new tab
+        if (url.includes('yts.mx') || url.includes('1337x') || url.includes('rarbg')) {
+            window.open(url, '_blank');
+            return;
+        }
+        
         // Switch iframe
         const playerContent = document.getElementById('videoPlayerContent');
         playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen scrolling="no" style="width:100%;height:100%;border:none;"></iframe>`;
