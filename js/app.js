@@ -541,10 +541,10 @@ class PriismaTv {
                 return;
             }
 
-            // Generate VidSrc URL
+            // Generate streaming URL - using cleaner sources with fewer ads
             const streamUrl = searchType === 'movie'
-                ? `https://vidsrc.to/embed/movie/${imdbId}`
-                : `https://vidsrc.to/embed/tv/${imdbId}/1/1`;
+                ? `https://vidsrc.icu/embed/movie/${imdbId}`
+                : `https://vidsrc.icu/embed/tv/${imdbId}/1/1`;
 
             // Save it to the item so it doesn't have to look it up again
             item.video = streamUrl;
@@ -746,10 +746,11 @@ class PriismaTv {
                 const imdbId = ids.imdb_id;
 
                 if (imdbId) {
-                    // Generate VidSrc streaming URL
+                    // Use ad-free/minimal-ad embed sources
+                    // vidsrc.icu is cleaner with fewer popups
                     const streamUrl = type === 'movie'
-                        ? `https://vidsrc.to/embed/movie/${imdbId}`
-                        : `https://vidsrc.to/embed/tv/${imdbId}/1/1`;
+                        ? `https://vidsrc.icu/embed/movie/${imdbId}`
+                        : `https://vidsrc.icu/embed/tv/${imdbId}/1/1`;
                     document.getElementById('contentVideo').value = streamUrl;
                     this.showToast('Streaming link auto-generated! Full movie ready to watch.', 'success');
                 } else {
