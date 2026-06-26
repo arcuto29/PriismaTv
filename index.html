@@ -277,6 +277,11 @@
                         <div class="form-group">
                             <label>Title *</label>
                             <input type="text" id="contentTitle" required placeholder="e.g. Spirited Away, Breaking Bad...">
+                            <small id="titleFetchStatus"></small>
+                        </div>
+                        <div class="form-group" id="posterPreviewGroup" style="display:none;">
+                            <label>Auto-found Poster (click to use)</label>
+                            <div id="posterResults" class="poster-results"></div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
@@ -331,8 +336,8 @@
                         </div>
                         <div class="form-group">
                             <label>Video/Stream URL</label>
-                            <input type="url" id="contentVideo" placeholder="https://... (direct video, YouTube embed, etc.)">
-                            <small>YouTube, Vimeo, direct MP4 link, or any embed URL</small>
+                            <input type="url" id="contentVideo" placeholder="https://streamtape.com/v/xxxxx or any embed link">
+                            <small>Paste your Streamtape, Filemoon, or any video link — auto-converts to embed!</small>
                         </div>
                         <div class="form-group">
                             <label>Magnet/Torrent Link</label>

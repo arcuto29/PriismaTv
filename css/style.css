@@ -585,6 +585,25 @@ body {
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-xl); padding: 36px;
 }
+.poster-results {
+    display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;
+}
+.poster-results img {
+    width: 80px; height: 120px; object-fit: cover;
+    border-radius: var(--radius-sm); cursor: pointer;
+    border: 2px solid transparent; transition: var(--transition);
+    opacity: 0.8;
+}
+.poster-results img:hover {
+    border-color: var(--accent-primary);
+    opacity: 1; transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+.poster-results img.selected {
+    border-color: var(--accent-primary);
+    opacity: 1;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+}
 .form-group { margin-bottom: 22px; }
 .form-group label {
     display: block; font-size: 0.82rem; font-weight: 600;

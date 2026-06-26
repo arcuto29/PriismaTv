@@ -483,13 +483,12 @@ class PriismaTv {
         }
 
         if (item.magnet) {
-            // Open magnet link directly (will open torrent client)
             window.open(item.magnet);
             this.showToast('Opening in your torrent client...', 'info');
             return;
         }
 
-        const url = item.video;
+        const url = this.convertToEmbed(item.video);
         const playerContainer = document.getElementById('videoPlayer');
         const playerContent = document.getElementById('videoPlayerContent');
 
@@ -501,15 +500,71 @@ class PriismaTv {
             const videoId = url.split('/').pop();
             playerContent.innerHTML = `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;"></iframe>`;
         } else if (url.match(/\.(mp4|webm|ogg|mkv)(\?|$)/i)) {
-            playerContent.innerHTML = `<video controls autoplay style="width:100%;height:100%;"><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
+            playerContent.innerHTML = `<video controls autoplay style="width:100%;height:100%;background:#000;"><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
         } else {
-            // Generic embed (iframe)
-            playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;"></iframe>`;
+            // Generic embed (iframe) - works for Streamtape, Filemoon, etc.
+            playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen scrolling="no" style="width:100%;height:100%;border:none;"></iframe>`;
         }
 
         playerContainer.classList.add('active');
         document.body.style.overflow = 'hidden';
         this.closeModal();
+    }
+
+    // ═══════ AUTO-CONVERT STREAMING URLS ═══════
+    convertToEmbed(url) {
+        if (!url) return url;
+
+        // Streamtape: convert /v/ to /e/
+        if (/streamtape\.com\/v\//i.test(url)) {
+            return url.replace('/v/', '/e/');
+        }
+        // Streamtape: if already /e/, keep it
+        if (/streamtape\.com\/e\//i.test(url)) {
+            return url;
+        }
+        // Streamtape: handle streamtape.to as well
+        if (/streamtape\.to\/v\//i.test(url)) {
+            return url.replace('/v/', '/e/');
+        }
+
+        // Filemoon: convert /d/ or /f/ to /e/
+        if (/filemoon\.(sx|to|in)\/[df]\//i.test(url)) {
+            return url.replace(/\/[df]\//, '/e/');
+        }
+        // Filemoon: if already /e/, keep it
+        if (/filemoon\.(sx|to|in)\/e\//i.test(url)) {
+            return url;
+        }
+
+        // Doodstream: convert /d/ to /e/
+        if (/dood\.(watch|to|so|pm|wf|re)\/d\//i.test(url)) {
+            return url.replace('/d/', '/e/');
+        }
+
+        // Mixdrop: convert /f/ to /e/
+        if (/mixdrop\.(co|to|sx|ch)\/f\//i.test(url)) {
+            return url.replace('/f/', '/e/');
+        }
+
+        // Upstream: convert /watch/ to /embed-
+        if (/upstream\.to\/watch\//i.test(url)) {
+            const id = url.split('/watch/')[1]?.split('.')[0];
+            if (id) return `https://upstream.to/embed-${id}.html`;
+        }
+
+        // VidSrc (IMDB-based free streaming)
+        if (/vidsrc\.(me|to|xyz)\/embed/i.test(url)) {
+            return url;
+        }
+
+        // Google Drive: convert /file/d/ID/view to /file/d/ID/preview
+        if (/drive\.google\.com\/file\/d\//i.test(url)) {
+            return url.replace('/view', '/preview').replace('/edit', '/preview');
+        }
+
+        // If nothing matched, return as-is (will be used in iframe)
+        return url;
     }
 
     closeVideoPlayer() {
@@ -544,6 +599,88 @@ class PriismaTv {
         document.getElementById('importData').addEventListener('click', () => document.getElementById('importFile').click());
         document.getElementById('importFile').addEventListener('change', (e) => this.importData(e));
         document.getElementById('resetAllData').addEventListener('click', () => this.resetAllData());
+
+        // Auto-fetch poster when title is typed
+        let fetchTimer;
+        document.getElementById('contentTitle').addEventListener('input', (e) => {
+            clearTimeout(fetchTimer);
+            const title = e.target.value.trim();
+            if (title.length < 3) {
+                document.getElementById('posterPreviewGroup').style.display = 'none';
+                document.getElementById('titleFetchStatus').textContent = '';
+                return;
+            }
+            document.getElementById('titleFetchStatus').textContent = 'Searching for posters...';
+            document.getElementById('titleFetchStatus').style.color = 'var(--accent-primary)';
+            fetchTimer = setTimeout(() => this.fetchPosterFromTMDB(title), 800);
+        });
+    }
+
+    // ═══════ AUTO-FETCH POSTER FROM TMDB ═══════
+    async fetchPosterFromTMDB(title) {
+        const TMDB_API_KEY = '2dca580c2a14b55200e784d157207b4d'; // Free public demo key
+        const statusEl = document.getElementById('titleFetchStatus');
+        const previewGroup = document.getElementById('posterPreviewGroup');
+        const resultsEl = document.getElementById('posterResults');
+
+        try {
+            const type = document.getElementById('contentType').value;
+            const searchType = type === 'movie' ? 'movie' : 'tv';
+            const response = await fetch(
+                `https://api.themoviedb.org/3/search/${searchType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(title)}&page=1`
+            );
+            const data = await response.json();
+
+            if (data.results && data.results.length > 0) {
+                const results = data.results.slice(0, 5); // Top 5 results
+                statusEl.textContent = `Found ${data.results.length} results — click a poster below to use it`;
+                statusEl.style.color = '#00ff88';
+
+                resultsEl.innerHTML = results.map(r => {
+                    const poster = r.poster_path ? `https://image.tmdb.org/t/p/w500${r.poster_path}` : '';
+                    const backdrop = r.backdrop_path ? `https://image.tmdb.org/t/p/original${r.backdrop_path}` : '';
+                    const name = r.title || r.name || '';
+                    const year = (r.release_date || r.first_air_date || '').split('-')[0];
+                    if (!poster) return '';
+                    return `<img src="${poster}" alt="${name} (${year})" title="${name} (${year})"
+                        data-poster="${poster}" data-backdrop="${backdrop}"
+                        data-year="${year}" data-description="${(r.overview || '').replace(/"/g, '&quot;')}"
+                        data-rating="${r.vote_average ? r.vote_average.toFixed(1) : ''}"
+                        onclick="app.selectPoster(this)">`;
+                }).join('');
+
+                previewGroup.style.display = 'block';
+            } else {
+                statusEl.textContent = 'No results found — try a different title or add poster URL manually';
+                statusEl.style.color = 'var(--text-muted)';
+                previewGroup.style.display = 'none';
+            }
+        } catch (err) {
+            statusEl.textContent = 'Could not fetch (check internet connection)';
+            statusEl.style.color = '#ff4444';
+            previewGroup.style.display = 'none';
+        }
+    }
+
+    selectPoster(imgEl) {
+        // Highlight selected
+        document.querySelectorAll('.poster-results img').forEach(i => i.classList.remove('selected'));
+        imgEl.classList.add('selected');
+
+        // Auto-fill fields
+        const poster = imgEl.dataset.poster;
+        const backdrop = imgEl.dataset.backdrop;
+        const year = imgEl.dataset.year;
+        const description = imgEl.dataset.description;
+        const rating = imgEl.dataset.rating;
+
+        if (poster) document.getElementById('contentPoster').value = poster;
+        if (backdrop) document.getElementById('contentBackdrop').value = backdrop;
+        if (year) document.getElementById('contentYear').value = year;
+        if (description) document.getElementById('contentDescription').value = description;
+        if (rating) document.getElementById('contentRating').value = rating;
+
+        this.showToast('Poster, backdrop & info auto-filled!', 'success');
     }
 
     addContent() {
