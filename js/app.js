@@ -427,13 +427,18 @@ class PriismaTv {
         // Delete button
         document.getElementById('modalDelete').onclick = () => this.deleteItem(item);
 
-        // Trailer button
+        // Trailer button - always show, auto-searches YouTube if no trailer saved
         const trailerBtn = document.getElementById('modalTrailer');
+        trailerBtn.style.display = 'inline-flex';
         if (item.trailer) {
-            trailerBtn.style.display = 'inline-flex';
             trailerBtn.onclick = () => this.playTrailer(item.trailer);
         } else {
-            trailerBtn.style.display = 'none';
+            // Open YouTube search for the trailer
+            trailerBtn.onclick = () => {
+                const query = encodeURIComponent(`${item.title} ${item.year || ''} official trailer`);
+                window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
+                this.showToast('Opening YouTube trailer search...', 'info');
+            };
         }
 
         // Links section
@@ -514,12 +519,36 @@ class PriismaTv {
         // If we have an IMDB ID, show source switcher with embeddable providers
         if (imdbId) {
             const sources = this.getEmbedSources(imdbId, type);
+            const isShow = (type === 'tv' || this.currentDetailItem?.type === 'anime' || this.currentDetailItem?.type === 'tvshow');
+            
+            // Season/Episode selector for TV shows and anime
+            let episodeBar = '';
+            if (isShow) {
+                const maxSeasons = this.currentDetailItem?.seasons || 4;
+                const maxEpisodes = this.currentDetailItem?.episodes ? Math.min(Math.ceil(this.currentDetailItem.episodes / maxSeasons), 26) : 12;
+                episodeBar = `
+                    <div class="episode-selector" id="episodeSelector">
+                        <select id="seasonSelect" onchange="app.changeEpisode()">
+                            ${Array.from({length: maxSeasons}, (_, i) => `<option value="${i+1}">S${i+1}</option>`).join('')}
+                        </select>
+                        <select id="episodeSelect" onchange="app.changeEpisode()">
+                            ${Array.from({length: maxEpisodes}, (_, i) => `<option value="${i+1}">E${i+1}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            }
+
             sourceBar.innerHTML = sources.map((s, i) => 
                 `<button class="${i === 0 ? 'active' : ''}" onclick="app.switchSource('${s.url}', this)">${s.name}</button>`
-            ).join('');
+            ).join('') + episodeBar;
             sourceBar.style.display = 'flex';
+            
+            // Store current IMDB for episode changes
+            this.currentImdbId = imdbId;
+            this.currentPlayerType = type;
+            
             // Load first source inline
-            playerContent.innerHTML = `<iframe src="${sources[0].url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen scrolling="no" referrerpolicy="origin" sandbox="allow-forms allow-scripts allow-same-origin allow-popups" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
+            playerContent.innerHTML = `<iframe src="${sources[0].url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen scrolling="no" referrerpolicy="origin" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
         } else {
             sourceBar.style.display = 'none';
             if (this.isYouTubeUrl(url)) {
@@ -528,7 +557,7 @@ class PriismaTv {
             } else if (url.match(/\.(mp4|webm|ogg)(\?|$)/i)) {
                 playerContent.innerHTML = `<video controls autoplay style="width:100%;height:100%;background:#000;position:absolute;top:0;left:0;"><source src="${url}" type="video/mp4"></video>`;
             } else {
-                playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen scrolling="no" sandbox="allow-forms allow-scripts allow-same-origin allow-popups" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
+                playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen scrolling="no" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
             }
         }
 
@@ -538,21 +567,11 @@ class PriismaTv {
     }
 
     // Embed sources that ACTUALLY work inline (no X-Frame-Options blocking)
-    getEmbedSources(imdbId, type) {
+    getEmbedSources(imdbId, type, season = 1, episode = 1) {
         const isMovie = type === 'movie';
         const isAnime = this.currentDetailItem?.type === 'anime';
-        const tmdbId = this.currentDetailItem?.tmdbId || '';
-
-        // These sources are specifically built for iframe embedding
-        if (isAnime) {
-            return [
-                { name: 'Server 1', url: `https://vidsrc.cc/v2/embed/tv/${imdbId}/1/1` },
-                { name: 'Server 2', url: `https://vidsrc.wiki/embed/tv/${imdbId}/1/1` },
-                { name: 'Server 3', url: `https://vidsrc.lol/embed/tv/${imdbId}/1/1` },
-                { name: 'Server 4', url: `https://www.2embed.skin/embedtv/${imdbId}&s=1&e=1` },
-                { name: 'Server 5', url: `https://vidsrc.wtf/api/2/tv/?id=${imdbId}&s=1&e=1` },
-            ];
-        }
+        const s = season;
+        const e = episode;
 
         if (isMovie) {
             return [
@@ -564,13 +583,13 @@ class PriismaTv {
             ];
         }
 
-        // TV Shows
+        // TV Shows & Anime - with season/episode
         return [
-            { name: 'Server 1', url: `https://vidsrc.cc/v2/embed/tv/${imdbId}/1/1` },
-            { name: 'Server 2', url: `https://vidsrc.wiki/embed/tv/${imdbId}/1/1` },
-            { name: 'Server 3', url: `https://vidsrc.lol/embed/tv/${imdbId}/1/1` },
-            { name: 'Server 4', url: `https://www.2embed.skin/embedtv/${imdbId}&s=1&e=1` },
-            { name: 'Server 5', url: `https://vidsrc.wtf/api/2/tv/?id=${imdbId}&s=1&e=1` },
+            { name: 'Server 1', url: `https://vidsrc.cc/v2/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 2', url: `https://vidsrc.wiki/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 3', url: `https://vidsrc.lol/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 4', url: `https://www.2embed.skin/embedtv/${imdbId}&s=${s}&e=${e}` },
+            { name: 'Server 5', url: `https://vidsrc.wtf/api/2/tv/?id=${imdbId}&s=${s}&e=${e}` },
         ];
     }
 
@@ -583,7 +602,37 @@ class PriismaTv {
         document.querySelectorAll('.video-source-bar button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const playerContent = document.getElementById('videoPlayerContent');
-        playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen scrolling="no" referrerpolicy="origin" sandbox="allow-forms allow-scripts allow-same-origin allow-popups" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
+        playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen scrolling="no" referrerpolicy="origin" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
+    }
+
+    // Change episode/season
+    changeEpisode() {
+        const season = document.getElementById('seasonSelect').value;
+        const episode = document.getElementById('episodeSelect').value;
+        const imdbId = this.currentImdbId;
+        const type = this.currentPlayerType;
+        
+        if (!imdbId) return;
+        
+        // Update sources with new season/episode
+        const sources = this.getEmbedSources(imdbId, type, season, episode);
+        
+        // Update source bar buttons
+        const sourceBar = document.getElementById('videoSourceBar');
+        const buttons = sourceBar.querySelectorAll('button');
+        buttons.forEach((btn, i) => {
+            if (sources[i]) {
+                btn.onclick = () => this.switchSource(sources[i].url, btn);
+            }
+        });
+        
+        // Load first source with new episode
+        const playerContent = document.getElementById('videoPlayerContent');
+        playerContent.innerHTML = `<iframe src="${sources[0].url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen scrolling="no" referrerpolicy="origin" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
+        
+        // Mark first button active
+        buttons.forEach(b => b.classList.remove('active'));
+        if (buttons[0]) buttons[0].classList.add('active');
     }
 
     // Auto-find streaming link when no video URL is saved
