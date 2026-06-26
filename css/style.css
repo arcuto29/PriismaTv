@@ -4,7 +4,7 @@
 ═══════════════════════════════════════════════════════════ */
 
 :root {
-    --bg-primary: #050508;
+    --bg-primary: #000000;
     --bg-secondary: #0c0c14;
     --bg-tertiary: #13132a;
     --bg-card: #0f0f1e;
@@ -42,11 +42,30 @@ html { scroll-behavior: smooth; }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg-primary);
+    background: #000000;
     color: var(--text-primary);
     overflow-x: hidden;
     min-height: 100vh;
     line-height: 1.6;
+}
+
+/* ═══════ STARS CANVAS ═══════ */
+#starsCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ═══════ HERO VIDEO BACKGROUND ═══════ */
+.hero-video-bg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    opacity: 0.85;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -171,6 +190,8 @@ body {
     margin-left: var(--sidebar-width);
     min-height: 100vh;
     transition: var(--transition);
+    position: relative;
+    z-index: 1;
 }
 .sidebar.collapsed ~ .main-content { margin-left: var(--sidebar-collapsed); }
 
@@ -263,7 +284,7 @@ body {
 /* ═══════ HERO SECTION ═══════ */
 .hero {
     position: relative;
-    height: 75vh; min-height: 550px; max-height: 750px;
+    height: 80vh; min-height: 600px; max-height: 800px;
     display: flex; align-items: flex-end;
     padding: 80px 50px;
     overflow: hidden;
@@ -272,17 +293,17 @@ body {
     position: absolute; inset: 0;
     background-size: cover;
     background-position: center 20%;
-    transition: transform 10s ease;
+    z-index: 0;
+    display: none; /* Hidden when video is present */
 }
-.hero:hover .hero-backdrop { transform: scale(1.04); }
 .hero::after {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(to top, var(--bg-primary) 0%, rgba(5,5,8,0.85) 25%, rgba(5,5,8,0.4) 55%, transparent 100%);
+    background: linear-gradient(to top, #000000 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.2) 60%, transparent 100%);
     z-index: 1;
 }
 .hero::before {
     content: ''; position: absolute; inset: 0;
-    background: linear-gradient(90deg, rgba(5,5,8,0.95) 0%, rgba(5,5,8,0.5) 40%, transparent 70%);
+    background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 40%, transparent 70%);
     z-index: 2;
 }
 .hero-content { position: relative; z-index: 3; max-width: 620px; }

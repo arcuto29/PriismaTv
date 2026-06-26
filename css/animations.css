@@ -2,26 +2,7 @@
    PriismaTv - Premium Animations & Effects
 ═══════════════════════════════════════════════════════════ */
 
-/* ═══════ AMBIENT BACKGROUND ═══════ */
-body::before {
-    content: '';
-    position: fixed;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background:
-        radial-gradient(ellipse at 20% 50%, rgba(0, 100, 255, 0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.03) 0%, transparent 40%),
-        radial-gradient(ellipse at 50% 80%, rgba(108, 92, 231, 0.03) 0%, transparent 50%);
-    animation: ambientFloat 25s ease-in-out infinite;
-    pointer-events: none;
-    z-index: -1;
-}
-
-@keyframes ambientFloat {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    33% { transform: translate(2%, -1%) rotate(0.5deg); }
-    66% { transform: translate(-1%, 1.5%) rotate(-0.5deg); }
-}
+/* Stars canvas handles the background now - no CSS ambient needed */
 
 /* ═══════ CARD ENTRANCE ═══════ */
 .content-card {
