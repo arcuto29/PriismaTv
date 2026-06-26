@@ -541,7 +541,7 @@ class PriismaTv {
             { name: 'Multi (4K)', url: isMovie ? `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` : `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=1&e=1` },
             { name: 'AutoEmbed', url: isMovie ? `https://player.autoembed.cc/embed/movie/${imdbId}` : `https://player.autoembed.cc/embed/tv/${imdbId}/1/1` },
             { name: '2Embed', url: isMovie ? `https://www.2embed.cc/embed/${imdbId}` : `https://www.2embed.cc/embedtv/${imdbId}&s=1&e=1` },
-            { name: 'YTS (Torrent)', url: isMovie ? `https://yts.mx/movies/${this.titleToSlug(this.currentDetailItem?.title)}-${this.currentDetailItem?.year || ''}` : null },
+            { name: 'YTS (Torrent)', url: isMovie ? `https://yifysearch.com/search/${encodeURIComponent(this.currentDetailItem?.title || '')}` : null },
         ].filter(s => s.url !== null);
     }
 
@@ -560,7 +560,7 @@ class PriismaTv {
         btn.classList.add('active');
         
         // If it's a YTS/torrent link, open in new tab
-        if (url.includes('yts.mx') || url.includes('1337x') || url.includes('rarbg')) {
+        if (url.includes('yifysearch') || url.includes('yts.mx') || url.includes('1337x') || url.includes('rarbg')) {
             window.open(url, '_blank');
             return;
         }
