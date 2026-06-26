@@ -478,7 +478,8 @@ class PriismaTv {
 
     playContent(item) {
         if (!item.video && !item.magnet) {
-            this.showToast('No stream link available for this title.', 'info');
+            // Try to generate a VidSrc link on-the-fly using TMDB
+            this.autoStreamFromTitle(item);
             return;
         }
 
@@ -489,10 +490,13 @@ class PriismaTv {
         }
 
         const url = this.convertToEmbed(item.video);
+        this.launchPlayer(url);
+    }
+
+    launchPlayer(url) {
         const playerContainer = document.getElementById('videoPlayer');
         const playerContent = document.getElementById('videoPlayerContent');
 
-        // Detect URL type and create appropriate player
         if (this.isYouTubeUrl(url)) {
             const videoId = this.getYouTubeId(url);
             playerContent.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;"></iframe>`;
@@ -502,13 +506,63 @@ class PriismaTv {
         } else if (url.match(/\.(mp4|webm|ogg|mkv)(\?|$)/i)) {
             playerContent.innerHTML = `<video controls autoplay style="width:100%;height:100%;background:#000;"><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
         } else {
-            // Generic embed (iframe) - works for Streamtape, Filemoon, etc.
             playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media" allowfullscreen scrolling="no" style="width:100%;height:100%;border:none;"></iframe>`;
         }
 
         playerContainer.classList.add('active');
         document.body.style.overflow = 'hidden';
         this.closeModal();
+    }
+
+    // Auto-find streaming link when no video URL is saved
+    async autoStreamFromTitle(item) {
+        this.showToast('Finding stream...', 'info');
+        const TMDB_API_KEY = '2dca580c2a14b55200e784d157207b4d';
+        const searchType = item.type === 'movie' ? 'movie' : 'tv';
+
+        try {
+            // Search TMDB for this title
+            const searchRes = await fetch(
+                `https://api.themoviedb.org/3/search/${searchType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(item.title)}&year=${item.year || ''}`
+            );
+            const searchData = await searchRes.json();
+
+            if (!searchData.results || searchData.results.length === 0) {
+                this.showToast('Could not find this title. Add a stream link manually.', 'error');
+                return;
+            }
+
+            const tmdbId = searchData.results[0].id;
+
+            // Get IMDB ID
+            const idsRes = await fetch(
+                `https://api.themoviedb.org/3/${searchType}/${tmdbId}/external_ids?api_key=${TMDB_API_KEY}`
+            );
+            const idsData = await idsRes.json();
+            const imdbId = idsData.imdb_id;
+
+            if (!imdbId) {
+                this.showToast('No streaming source found for this title.', 'error');
+                return;
+            }
+
+            // Generate VidSrc URL
+            const streamUrl = searchType === 'movie'
+                ? `https://vidsrc.to/embed/movie/${imdbId}`
+                : `https://vidsrc.to/embed/tv/${imdbId}/1/1`;
+
+            // Save it to the item so it doesn't have to look it up again
+            item.video = streamUrl;
+            item.imdbId = imdbId;
+            this.saveContent();
+
+            // Play it
+            this.launchPlayer(streamUrl);
+            this.showToast('Stream found! Playing now...', 'success');
+
+        } catch (err) {
+            this.showToast('Error finding stream. Check your connection.', 'error');
+        }
     }
 
     // ═══════ AUTO-CONVERT STREAMING URLS ═══════
@@ -633,7 +687,7 @@ class PriismaTv {
 
             if (data.results && data.results.length > 0) {
                 const results = data.results.slice(0, 5); // Top 5 results
-                statusEl.textContent = `Found ${data.results.length} results — click a poster below to use it`;
+                statusEl.textContent = `Found ${data.results.length} results — click a poster to auto-fill everything + streaming link`;
                 statusEl.style.color = '#00ff88';
 
                 resultsEl.innerHTML = results.map(r => {
@@ -644,8 +698,10 @@ class PriismaTv {
                     if (!poster) return '';
                     return `<img src="${poster}" alt="${name} (${year})" title="${name} (${year})"
                         data-poster="${poster}" data-backdrop="${backdrop}"
+                        data-tmdb-id="${r.id}" data-type="${searchType}"
                         data-year="${year}" data-description="${(r.overview || '').replace(/"/g, '&quot;')}"
                         data-rating="${r.vote_average ? r.vote_average.toFixed(1) : ''}"
+                        data-title="${name}"
                         onclick="app.selectPoster(this)">`;
                 }).join('');
 
@@ -662,7 +718,7 @@ class PriismaTv {
         }
     }
 
-    selectPoster(imgEl) {
+    async selectPoster(imgEl) {
         // Highlight selected
         document.querySelectorAll('.poster-results img').forEach(i => i.classList.remove('selected'));
         imgEl.classList.add('selected');
@@ -673,14 +729,43 @@ class PriismaTv {
         const year = imgEl.dataset.year;
         const description = imgEl.dataset.description;
         const rating = imgEl.dataset.rating;
+        const tmdbId = imgEl.dataset.tmdbId;
+        const type = imgEl.dataset.type;
+        const title = imgEl.dataset.title;
 
         if (poster) document.getElementById('contentPoster').value = poster;
         if (backdrop) document.getElementById('contentBackdrop').value = backdrop;
         if (year) document.getElementById('contentYear').value = year;
         if (description) document.getElementById('contentDescription').value = description;
         if (rating) document.getElementById('contentRating').value = rating;
+        if (title) document.getElementById('contentTitle').value = title;
 
-        this.showToast('Poster, backdrop & info auto-filled!', 'success');
+        // Fetch IMDB ID from TMDB and generate streaming link
+        if (tmdbId) {
+            try {
+                const TMDB_API_KEY = '2dca580c2a14b55200e784d157207b4d';
+                const detailRes = await fetch(
+                    `https://api.themoviedb.org/3/${type}/${tmdbId}/external_ids?api_key=${TMDB_API_KEY}`
+                );
+                const ids = await detailRes.json();
+                const imdbId = ids.imdb_id;
+
+                if (imdbId) {
+                    // Generate VidSrc streaming URL
+                    const streamUrl = type === 'movie'
+                        ? `https://vidsrc.to/embed/movie/${imdbId}`
+                        : `https://vidsrc.to/embed/tv/${imdbId}/1/1`;
+                    document.getElementById('contentVideo').value = streamUrl;
+                    this.showToast('Streaming link auto-generated! Full movie ready to watch.', 'success');
+                } else {
+                    this.showToast('Poster filled! Add a streaming link manually if needed.', 'info');
+                }
+            } catch (err) {
+                this.showToast('Poster filled! Could not get streaming link automatically.', 'info');
+            }
+        } else {
+            this.showToast('Poster, backdrop & info auto-filled!', 'success');
+        }
     }
 
     addContent() {
