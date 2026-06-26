@@ -343,6 +343,11 @@
                             <label>Magnet/Torrent Link</label>
                             <input type="text" id="contentMagnet" placeholder="magnet:?xt=urn:btih:...">
                         </div>
+                        <div class="form-group">
+                            <label>YouTube Trailer ID</label>
+                            <input type="text" id="contentTrailer" placeholder="e.g. zSWdZVtXT7E (from YouTube URL)">
+                            <small>Just the ID part from youtube.com/watch?v=<strong>zSWdZVtXT7E</strong></small>
+                        </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Duration</label>
@@ -408,6 +413,7 @@
                             <p id="modalDescription"></p>
                             <div class="modal-actions">
                                 <button class="btn btn-primary" id="modalWatch"><i class="fas fa-play"></i> Watch</button>
+                                <button class="btn btn-secondary" id="modalTrailer"><i class="fas fa-video"></i> Trailer</button>
                                 <button class="btn btn-secondary" id="modalWatchlist"><i class="fas fa-bookmark"></i> Watchlist</button>
                                 <button class="btn btn-icon" id="modalFavorite"><i class="fas fa-heart"></i></button>
                                 <button class="btn btn-icon" id="modalShare"><i class="fas fa-share-alt"></i></button>

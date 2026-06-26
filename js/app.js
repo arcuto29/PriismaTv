@@ -427,6 +427,15 @@ class PriismaTv {
         // Delete button
         document.getElementById('modalDelete').onclick = () => this.deleteItem(item);
 
+        // Trailer button
+        const trailerBtn = document.getElementById('modalTrailer');
+        if (item.trailer) {
+            trailerBtn.style.display = 'inline-flex';
+            trailerBtn.onclick = () => this.playTrailer(item.trailer);
+        } else {
+            trailerBtn.style.display = 'none';
+        }
+
         // Links section
         const linksEl = document.getElementById('modalLinks');
         let links = '';
@@ -703,9 +712,27 @@ class PriismaTv {
     closeVideoPlayer() {
         const playerContainer = document.getElementById('videoPlayer');
         const playerContent = document.getElementById('videoPlayerContent');
+        const sourceBar = document.getElementById('videoSourceBar');
         playerContainer.classList.remove('active');
         playerContent.innerHTML = '';
+        sourceBar.innerHTML = '';
+        sourceBar.style.display = 'none';
         document.body.style.overflow = '';
+    }
+
+    playTrailer(trailerId) {
+        const playerContainer = document.getElementById('videoPlayer');
+        const playerContent = document.getElementById('videoPlayerContent');
+        const sourceBar = document.getElementById('videoSourceBar');
+        
+        sourceBar.innerHTML = '<button class="active" style="pointer-events:none;"><i class="fas fa-video"></i> Trailer</button>';
+        sourceBar.style.display = 'flex';
+        
+        playerContent.innerHTML = `<iframe src="https://www.youtube.com/embed/${trailerId}?autoplay=1&rel=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>`;
+        
+        playerContainer.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        this.closeModal();
     }
 
     isYouTubeUrl(url) {
@@ -836,7 +863,20 @@ class PriismaTv {
                         ? `https://vidsrc.xyz/embed/movie/${imdbId}`
                         : `https://vidsrc.xyz/embed/tv/${imdbId}/1/1`;
                     document.getElementById('contentVideo').value = streamUrl;
-                    this.showToast('HD streaming link generated! 1080p+ quality.', 'success');
+
+                    // Also fetch trailer
+                    try {
+                        const videosRes = await fetch(
+                            `https://api.themoviedb.org/3/${type}/${tmdbId}/videos?api_key=${TMDB_API_KEY}`
+                        );
+                        const videosData = await videosRes.json();
+                        const trailer = videosData.results?.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+                        if (trailer) {
+                            document.getElementById('contentTrailer').value = trailer.key;
+                        }
+                    } catch(e) {}
+
+                    this.showToast('HD streaming link + trailer auto-generated!', 'success');
                 } else {
                     this.showToast('Poster filled! Add a streaming link manually if needed.', 'info');
                 }
@@ -864,6 +904,7 @@ class PriismaTv {
             backdrop: document.getElementById('contentBackdrop').value.trim() || null,
             video: document.getElementById('contentVideo').value.trim() || null,
             magnet: document.getElementById('contentMagnet').value.trim() || null,
+            trailer: document.getElementById('contentTrailer').value.trim() || null,
             duration: document.getElementById('contentDuration').value.trim() || null,
             episodes: parseInt(document.getElementById('contentEpisodes').value) || null,
             seasons: parseInt(document.getElementById('contentSeasons').value) || null,
