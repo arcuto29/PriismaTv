@@ -1,4 +1,7 @@
-// PriismaTv - Main Application
+// ═══════════════════════════════════════════════════════════
+// PriismaTv - Main Application (Fully Working)
+// ═══════════════════════════════════════════════════════════
+
 class PriismaTv {
     constructor() {
         this.content = JSON.parse(localStorage.getItem(STORAGE_KEYS.CONTENT)) || [];
@@ -6,21 +9,25 @@ class PriismaTv {
         this.favorites = JSON.parse(localStorage.getItem(STORAGE_KEYS.FAVORITES)) || [];
         this.friends = JSON.parse(localStorage.getItem(STORAGE_KEYS.FRIENDS)) || [];
         this.currentPage = 'home';
+        this.currentDetailItem = null;
         this.init();
     }
 
     init() {
         this.bindNavigation();
         this.bindSearch();
+        this.bindSidebar();
         this.bindModal();
         this.bindAdmin();
         this.bindFriends();
-        this.bindSidebar();
+        this.bindVideoPlayer();
+        this.bindThemeToggle();
         this.renderHome();
         this.updateStats();
+        this.updateNotifBadge();
     }
 
-    // ===== NAVIGATION =====
+    // ═══════ NAVIGATION ═══════
     bindNavigation() {
         document.querySelectorAll('[data-page]').forEach(link => {
             link.addEventListener('click', (e) => {
@@ -33,16 +40,16 @@ class PriismaTv {
 
     navigateTo(page) {
         this.currentPage = page;
+        // Update active states
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
-
         const pageEl = document.getElementById(`page-${page}`);
-        const navEl = document.querySelector(`[data-page="${page}"]`);
+        const navEl = document.querySelector(`.nav-links [data-page="${page}"]`);
         if (pageEl) pageEl.classList.add('active');
         if (navEl) navEl.classList.add('active');
 
-        // Render page content
-        switch(page) {
+        // Render page
+        switch (page) {
             case 'home': this.renderHome(); break;
             case 'movies': this.renderMovies(); break;
             case 'anime': this.renderAnime(); break;
@@ -58,12 +65,10 @@ class PriismaTv {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-
-    // ===== SIDEBAR =====
+    // ═══════ SIDEBAR ═══════
     bindSidebar() {
-        const toggle = document.getElementById('sidebarToggle');
-        const sidebar = document.getElementById('sidebar');
-        toggle.addEventListener('click', () => {
+        document.getElementById('sidebarToggle').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
             if (window.innerWidth <= 768) {
                 sidebar.classList.toggle('mobile-open');
             } else {
@@ -72,7 +77,81 @@ class PriismaTv {
         });
     }
 
-    // ===== RENDER HOME =====
+    bindThemeToggle() {
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        });
+    }
+
+
+    // ═══════ SEARCH ═══════
+    bindSearch() {
+        const input = document.getElementById('searchInput');
+        const results = document.getElementById('searchResults');
+        let debounceTimer;
+
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const query = input.value.toLowerCase().trim();
+                if (query.length < 2) {
+                    results.classList.remove('active');
+                    return;
+                }
+                const matches = this.content.filter(item =>
+                    item.title.toLowerCase().includes(query) ||
+                    (item.genre && item.genre.toLowerCase().includes(query)) ||
+                    (item.type && item.type.toLowerCase().includes(query)) ||
+                    (item.description && item.description.toLowerCase().includes(query)) ||
+                    (item.tags && item.tags.some(t => t.toLowerCase().includes(query)))
+                ).slice(0, 8);
+
+                if (matches.length === 0) {
+                    results.innerHTML = `<div class="search-result-item" style="justify-content:center; color: var(--text-muted);">No results for "${query}"</div>`;
+                } else {
+                    results.innerHTML = matches.map(item => `
+                        <div class="search-result-item" data-id="${item.id}">
+                            <img src="${item.poster || this.getPlaceholder(item.title)}" alt="${item.title}" onerror="this.src='${this.getPlaceholder(item.title)}'">
+                            <div class="search-result-info">
+                                <h4>${this.highlightMatch(item.title, query)}</h4>
+                                <span>${this.formatType(item.type)} &bull; ${item.year || 'N/A'} &bull; ★ ${item.rating || 'N/A'}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                results.classList.add('active');
+                this.bindSearchResults(results, input);
+            }, 200);
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { results.classList.remove('active'); input.blur(); }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) results.classList.remove('active');
+        });
+    }
+
+    bindSearchResults(results, input) {
+        results.querySelectorAll('.search-result-item[data-id]').forEach(el => {
+            el.addEventListener('click', () => {
+                const item = this.content.find(c => c.id === el.dataset.id);
+                if (item) this.openDetail(item);
+                results.classList.remove('active');
+                input.value = '';
+            });
+        });
+    }
+
+    highlightMatch(text, query) {
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<mark style="background:rgba(0,212,255,0.3);color:white;border-radius:2px;padding:0 2px;">$1</mark>');
+    }
+
+
+    // ═══════ RENDER HOME ═══════
     renderHome() {
         this.renderHero();
         this.renderRow('trendingRow', this.getByTag('trending'));
@@ -83,43 +162,58 @@ class PriismaTv {
 
     renderHero() {
         const featured = this.content.filter(c => c.tags && c.tags.includes('must-watch'));
-        const item = featured[Math.floor(Math.random() * featured.length)] || this.content[0];
+        const item = featured.length > 0
+            ? featured[Math.floor(Math.random() * featured.length)]
+            : this.content[0];
         if (!item) return;
 
-        const backdrop = document.querySelector('.hero-backdrop');
+        this.currentHeroItem = item;
+        const backdrop = document.getElementById('heroBackdrop');
         if (item.backdrop) {
             backdrop.style.backgroundImage = `url(${item.backdrop})`;
+        } else if (item.poster) {
+            backdrop.style.backgroundImage = `url(${item.poster})`;
         }
+
         document.getElementById('heroTitle').textContent = item.title;
-        document.getElementById('heroDescription').textContent = item.description || '';
-        
+        document.getElementById('heroDescription').textContent = item.description || 'No description available.';
+
         const meta = document.getElementById('heroMeta');
         meta.innerHTML = `
-            <span class="rating"><i class="fas fa-star"></i> ${item.rating || 'N/A'}</span>
-            <span><i class="fas fa-calendar"></i> ${item.year || ''}</span>
-            <span><i class="fas fa-tag"></i> ${item.genre || ''}</span>
+            ${item.rating ? `<span class="rating"><i class="fas fa-star"></i> ${item.rating}</span>` : ''}
+            ${item.year ? `<span><i class="fas fa-calendar"></i> ${item.year}</span>` : ''}
+            ${item.genre ? `<span><i class="fas fa-tag"></i> ${this.capitalizeFirst(item.genre)}</span>` : ''}
             ${item.duration ? `<span><i class="fas fa-clock"></i> ${item.duration}</span>` : ''}
+            ${item.episodes ? `<span><i class="fas fa-list"></i> ${item.episodes} eps</span>` : ''}
         `;
 
-        document.getElementById('heroWatch').onclick = () => this.openDetail(item);
+        document.getElementById('heroWatch').onclick = () => this.playContent(item);
         document.getElementById('heroInfo').onclick = () => this.openDetail(item);
+
+        const heroFav = document.getElementById('heroFav');
+        heroFav.classList.toggle('active', this.favorites.includes(item.id));
+        heroFav.onclick = () => {
+            this.toggleFavorite(item.id);
+            heroFav.classList.toggle('active', this.favorites.includes(item.id));
+        };
     }
 
     renderRow(containerId, items) {
         const container = document.getElementById(containerId);
         if (!container) return;
-        container.innerHTML = items.map(item => this.createCard(item)).join('');
+        container.innerHTML = items.length > 0
+            ? items.map(item => this.createCard(item)).join('')
+            : '<p style="color: var(--text-muted); padding: 20px;">No content yet. Add some!</p>';
         this.bindCardEvents(container);
     }
 
-    // ===== RENDER PAGES =====
+    // ═══════ RENDER CATEGORY PAGES ═══════
     renderMovies() {
         const genre = document.getElementById('movieGenreFilter').value;
         const sort = document.getElementById('movieSortFilter').value;
         let items = this.content.filter(c => c.type === 'movie');
         items = this.filterAndSort(items, genre, sort);
         this.renderGrid('moviesGrid', items);
-
         document.getElementById('movieGenreFilter').onchange = () => this.renderMovies();
         document.getElementById('movieSortFilter').onchange = () => this.renderMovies();
     }
@@ -130,7 +224,6 @@ class PriismaTv {
         let items = this.content.filter(c => c.type === 'anime');
         items = this.filterAndSort(items, genre, sort);
         this.renderGrid('animeGrid', items);
-
         document.getElementById('animeGenreFilter').onchange = () => this.renderAnime();
         document.getElementById('animeSortFilter').onchange = () => this.renderAnime();
     }
@@ -141,24 +234,21 @@ class PriismaTv {
         let items = this.content.filter(c => c.type === 'tvshow');
         items = this.filterAndSort(items, genre, sort);
         this.renderGrid('tvshowsGrid', items);
-
         document.getElementById('tvGenreFilter').onchange = () => this.renderTVShows();
         document.getElementById('tvSortFilter').onchange = () => this.renderTVShows();
     }
 
-
     renderWatchlist() {
         const items = this.content.filter(c => this.watchlist.includes(c.id));
-        this.renderGrid('watchlistGrid', items);
         document.getElementById('watchlistCount').textContent = `${items.length} items`;
-        
         const empty = document.getElementById('watchlistEmpty');
         if (items.length === 0) {
             empty.classList.add('active');
+            document.getElementById('watchlistGrid').innerHTML = '';
         } else {
             empty.classList.remove('active');
+            this.renderGrid('watchlistGrid', items);
         }
-
         document.getElementById('clearWatchlist').onclick = () => {
             if (confirm('Clear your entire watchlist?')) {
                 this.watchlist = [];
@@ -171,41 +261,45 @@ class PriismaTv {
 
     renderFavorites() {
         const items = this.content.filter(c => this.favorites.includes(c.id));
-        this.renderGrid('favoritesGrid', items);
         document.getElementById('favoritesCount').textContent = `${items.length} items`;
-
         const empty = document.getElementById('favoritesEmpty');
         if (items.length === 0) {
             empty.classList.add('active');
+            document.getElementById('favoritesGrid').innerHTML = '';
         } else {
             empty.classList.remove('active');
+            this.renderGrid('favoritesGrid', items);
         }
     }
 
     renderGrid(containerId, items) {
         const container = document.getElementById(containerId);
         if (!container) return;
-        container.innerHTML = items.map(item => this.createCard(item)).join('');
+        container.innerHTML = items.length > 0
+            ? items.map(item => this.createCard(item)).join('')
+            : '<p style="color: var(--text-muted); padding: 40px; text-align: center; grid-column: 1/-1;">No content found</p>';
         this.bindCardEvents(container);
     }
 
-    // ===== CARD CREATION =====
+
+    // ═══════ CARD CREATION ═══════
     createCard(item) {
         const isWatchlist = this.watchlist.includes(item.id);
         const isFavorite = this.favorites.includes(item.id);
-        const posterUrl = item.poster || `https://via.placeholder.com/300x450/1a1a2e/00b4ff?text=${encodeURIComponent(item.title)}`;
-        
+        const posterUrl = item.poster || this.getPlaceholder(item.title);
+
         return `
             <div class="content-card" data-id="${item.id}">
                 <div class="card-poster">
-                    <img src="${posterUrl}" alt="${item.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x450/1a1a2e/00b4ff?text=${encodeURIComponent(item.title)}'">
-                    <span class="card-type-badge ${item.type}">${item.type === 'tvshow' ? 'TV' : item.type}</span>
+                    <img src="${posterUrl}" alt="${item.title}" loading="lazy"
+                         onerror="this.src='${this.getPlaceholder(item.title)}'">
+                    <span class="card-type-badge ${item.type}">${this.formatType(item.type)}</span>
                     <div class="card-overlay">
                         <div class="card-overlay-actions">
-                            <button class="watchlist-btn ${isWatchlist ? 'active' : ''}" data-id="${item.id}" title="Watchlist">
+                            <button class="watchlist-btn ${isWatchlist ? 'active' : ''}" data-id="${item.id}" title="${isWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}">
                                 <i class="fas fa-bookmark"></i>
                             </button>
-                            <button class="favorite-btn ${isFavorite ? 'active' : ''}" data-id="${item.id}" title="Favorite">
+                            <button class="favorite-btn ${isFavorite ? 'active' : ''}" data-id="${item.id}" title="${isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}">
                                 <i class="fas fa-heart"></i>
                             </button>
                         </div>
@@ -214,9 +308,9 @@ class PriismaTv {
                 <div class="card-info">
                     <h4>${item.title}</h4>
                     <div class="card-meta">
-                        <span class="rating"><i class="fas fa-star"></i> ${item.rating || '-'}</span>
+                        ${item.rating ? `<span class="rating"><i class="fas fa-star"></i> ${item.rating}</span>` : ''}
                         <span>${item.year || ''}</span>
-                        <span>${item.genre || ''}</span>
+                        <span>${item.genre ? this.capitalizeFirst(item.genre) : ''}</span>
                     </div>
                 </div>
             </div>
@@ -224,88 +318,104 @@ class PriismaTv {
     }
 
     bindCardEvents(container) {
+        // Click card to open detail
         container.querySelectorAll('.content-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.watchlist-btn') || e.target.closest('.favorite-btn')) return;
-                const id = card.dataset.id;
-                const item = this.content.find(c => c.id === id);
+                const item = this.content.find(c => c.id === card.dataset.id);
                 if (item) this.openDetail(item);
             });
         });
 
+        // Watchlist buttons
         container.querySelectorAll('.watchlist-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.toggleWatchlist(btn.dataset.id);
                 btn.classList.toggle('active');
+                btn.title = btn.classList.contains('active') ? 'Remove from Watchlist' : 'Add to Watchlist';
             });
         });
 
+        // Favorite buttons
         container.querySelectorAll('.favorite-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.toggleFavorite(btn.dataset.id);
                 btn.classList.toggle('active');
+                btn.title = btn.classList.contains('active') ? 'Remove from Favorites' : 'Add to Favorites';
             });
         });
     }
 
 
-    // ===== DETAIL MODAL =====
+    // ═══════ DETAIL MODAL ═══════
     bindModal() {
         document.getElementById('modalClose').addEventListener('click', () => this.closeModal());
         document.getElementById('detailModal').addEventListener('click', (e) => {
             if (e.target === document.getElementById('detailModal')) this.closeModal();
         });
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') this.closeModal();
+            if (e.key === 'Escape') {
+                this.closeModal();
+                this.closeVideoPlayer();
+            }
         });
     }
 
     openDetail(item) {
+        this.currentDetailItem = item;
         const modal = document.getElementById('detailModal');
         const backdrop = document.getElementById('modalBackdrop');
-        
+
+        // Set backdrop
         if (item.backdrop) {
             backdrop.style.backgroundImage = `url(${item.backdrop})`;
         } else if (item.poster) {
             backdrop.style.backgroundImage = `url(${item.poster})`;
+        } else {
+            backdrop.style.backgroundImage = 'none';
+            backdrop.style.background = 'var(--bg-tertiary)';
         }
 
+        // Set poster
         const posterEl = document.getElementById('modalPoster');
-        posterEl.innerHTML = `<img src="${item.poster || ''}" alt="${item.title}">`;
+        posterEl.innerHTML = `<img src="${item.poster || this.getPlaceholder(item.title)}" alt="${item.title}" onerror="this.src='${this.getPlaceholder(item.title)}'">`;
 
+        // Set info
         document.getElementById('modalTitle').textContent = item.title;
         document.getElementById('modalDescription').textContent = item.description || 'No description available.';
 
+        // Meta info
         const meta = document.getElementById('modalMeta');
         meta.innerHTML = `
-            <span class="rating"><i class="fas fa-star"></i> ${item.rating || 'N/A'}</span>
-            <span><i class="fas fa-calendar"></i> ${item.year || 'Unknown'}</span>
-            <span><i class="fas fa-tag"></i> ${item.genre || 'Unknown'}</span>
+            ${item.rating ? `<span class="rating"><i class="fas fa-star"></i> ${item.rating}/10</span>` : ''}
+            ${item.year ? `<span><i class="fas fa-calendar"></i> ${item.year}</span>` : ''}
+            ${item.genre ? `<span><i class="fas fa-tag"></i> ${this.capitalizeFirst(item.genre)}</span>` : ''}
             ${item.duration ? `<span><i class="fas fa-clock"></i> ${item.duration}</span>` : ''}
-            ${item.episodes ? `<span><i class="fas fa-list"></i> ${item.episodes} eps</span>` : ''}
-            ${item.seasons ? `<span><i class="fas fa-layer-group"></i> ${item.seasons} seasons</span>` : ''}
+            ${item.episodes ? `<span><i class="fas fa-list"></i> ${item.episodes} episodes</span>` : ''}
+            ${item.seasons ? `<span><i class="fas fa-layer-group"></i> ${item.seasons} season${item.seasons > 1 ? 's' : ''}</span>` : ''}
+            <span><i class="fas fa-${item.type === 'movie' ? 'film' : item.type === 'anime' ? 'dragon' : 'tv'}"></i> ${this.formatType(item.type)}</span>
         `;
 
         // Watch button
         const watchBtn = document.getElementById('modalWatch');
-        if (item.video) {
-            watchBtn.onclick = () => window.open(item.video, '_blank');
-        } else if (item.magnet) {
-            watchBtn.onclick = () => window.open(item.magnet);
+        if (item.video || item.magnet) {
+            watchBtn.style.opacity = '1';
+            watchBtn.onclick = () => this.playContent(item);
         } else {
-            watchBtn.onclick = () => this.showToast('No stream link available. Add one via the admin panel.', 'info');
+            watchBtn.style.opacity = '0.5';
+            watchBtn.onclick = () => this.showToast('No stream link added yet. Edit in Add Content.', 'info');
         }
 
         // Watchlist button
         const wlBtn = document.getElementById('modalWatchlist');
         const isWl = this.watchlist.includes(item.id);
-        wlBtn.innerHTML = `<i class="fas fa-bookmark"></i> ${isWl ? 'In Watchlist' : 'Watchlist'}`;
+        wlBtn.innerHTML = `<i class="fas fa-bookmark"></i> ${isWl ? 'In Watchlist' : 'Add to Watchlist'}`;
         wlBtn.onclick = () => {
             this.toggleWatchlist(item.id);
             const nowWl = this.watchlist.includes(item.id);
-            wlBtn.innerHTML = `<i class="fas fa-bookmark"></i> ${nowWl ? 'In Watchlist' : 'Watchlist'}`;
+            wlBtn.innerHTML = `<i class="fas fa-bookmark"></i> ${nowWl ? 'In Watchlist' : 'Add to Watchlist'}`;
         };
 
         // Favorite button
@@ -317,19 +427,15 @@ class PriismaTv {
         };
 
         // Share button
-        document.getElementById('modalShare').onclick = () => {
-            const shareData = JSON.stringify({ shared: [item.id], from: 'PriismaTv' });
-            navigator.clipboard.writeText(btoa(shareData)).then(() => {
-                this.showToast('Share code copied to clipboard!', 'success');
-            }).catch(() => {
-                this.showToast('Could not copy. Try manually.', 'error');
-            });
-        };
+        document.getElementById('modalShare').onclick = () => this.shareItem(item);
 
-        // Links
+        // Delete button
+        document.getElementById('modalDelete').onclick = () => this.deleteItem(item);
+
+        // Links section
         const linksEl = document.getElementById('modalLinks');
         let links = '';
-        if (item.video) links += `<a href="${item.video}" target="_blank"><i class="fas fa-play"></i> Stream</a>`;
+        if (item.video) links += `<a href="${item.video}" target="_blank"><i class="fas fa-play-circle"></i> Stream Link</a>`;
         if (item.magnet) links += `<a href="${item.magnet}"><i class="fas fa-magnet"></i> Magnet Link</a>`;
         linksEl.innerHTML = links;
 
@@ -340,93 +446,118 @@ class PriismaTv {
     closeModal() {
         document.getElementById('detailModal').classList.remove('active');
         document.body.style.overflow = '';
+        this.currentDetailItem = null;
+    }
+
+    deleteItem(item) {
+        if (!confirm(`Delete "${item.title}" from your collection?`)) return;
+        this.content = this.content.filter(c => c.id !== item.id);
+        this.watchlist = this.watchlist.filter(id => id !== item.id);
+        this.favorites = this.favorites.filter(id => id !== item.id);
+        this.saveContent();
+        this.saveWatchlist();
+        this.saveFavorites();
+        this.closeModal();
+        this.navigateTo(this.currentPage);
+        this.updateStats();
+        this.showToast(`"${item.title}" deleted`, 'info');
+    }
+
+    shareItem(item) {
+        const data = { items: [item], from: 'PriismaTv', shared: new Date().toISOString() };
+        const code = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+        this.copyToClipboard(code);
+        this.showToast('Share code copied! Send it to your friends.', 'success');
     }
 
 
-    // ===== SEARCH =====
-    bindSearch() {
-        const input = document.getElementById('searchInput');
-        const results = document.getElementById('searchResults');
+    // ═══════ VIDEO PLAYER ═══════
+    bindVideoPlayer() {
+        document.getElementById('videoPlayerClose').addEventListener('click', () => this.closeVideoPlayer());
+    }
 
-        input.addEventListener('input', () => {
-            const query = input.value.toLowerCase().trim();
-            if (query.length < 2) {
-                results.classList.remove('active');
-                return;
-            }
+    playContent(item) {
+        if (!item.video && !item.magnet) {
+            this.showToast('No stream link available for this title.', 'info');
+            return;
+        }
 
-            const matches = this.content.filter(item =>
-                item.title.toLowerCase().includes(query) ||
-                (item.genre && item.genre.toLowerCase().includes(query)) ||
-                (item.type && item.type.toLowerCase().includes(query)) ||
-                (item.tags && item.tags.some(t => t.includes(query)))
-            ).slice(0, 8);
+        if (item.magnet) {
+            // Open magnet link directly (will open torrent client)
+            window.open(item.magnet);
+            this.showToast('Opening in your torrent client...', 'info');
+            return;
+        }
 
-            if (matches.length === 0) {
-                results.innerHTML = '<div class="search-result-item"><span style="color: var(--text-muted)">No results found</span></div>';
-            } else {
-                results.innerHTML = matches.map(item => `
-                    <div class="search-result-item" data-id="${item.id}">
-                        <img src="${item.poster || 'https://via.placeholder.com/45x65/1a1a2e/00b4ff'}" alt="">
-                        <div class="search-result-info">
-                            <h4>${item.title}</h4>
-                            <span>${item.type === 'tvshow' ? 'TV Show' : item.type} • ${item.year || ''} • ★ ${item.rating || 'N/A'}</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            results.classList.add('active');
+        const url = item.video;
+        const playerContainer = document.getElementById('videoPlayer');
+        const playerContent = document.getElementById('videoPlayerContent');
 
-            results.querySelectorAll('.search-result-item[data-id]').forEach(el => {
-                el.addEventListener('click', () => {
-                    const item = this.content.find(c => c.id === el.dataset.id);
-                    if (item) this.openDetail(item);
-                    results.classList.remove('active');
-                    input.value = '';
-                });
-            });
-        });
+        // Detect URL type and create appropriate player
+        if (this.isYouTubeUrl(url)) {
+            const videoId = this.getYouTubeId(url);
+            playerContent.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;"></iframe>`;
+        } else if (this.isVimeoUrl(url)) {
+            const videoId = url.split('/').pop();
+            playerContent.innerHTML = `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;"></iframe>`;
+        } else if (url.match(/\.(mp4|webm|ogg|mkv)(\?|$)/i)) {
+            playerContent.innerHTML = `<video controls autoplay style="width:100%;height:100%;"><source src="${url}" type="video/mp4">Your browser does not support video.</video>`;
+        } else {
+            // Generic embed (iframe)
+            playerContent.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;"></iframe>`;
+        }
 
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                results.classList.remove('active');
-                input.blur();
-            }
-        });
+        playerContainer.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        this.closeModal();
+    }
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.search-container')) {
-                results.classList.remove('active');
-            }
-        });
+    closeVideoPlayer() {
+        const playerContainer = document.getElementById('videoPlayer');
+        const playerContent = document.getElementById('videoPlayerContent');
+        playerContainer.classList.remove('active');
+        playerContent.innerHTML = '';
+        document.body.style.overflow = '';
+    }
+
+    isYouTubeUrl(url) {
+        return /(?:youtube\.com|youtu\.be)/i.test(url);
+    }
+
+    getYouTubeId(url) {
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?\s]+)/);
+        return match ? match[1] : '';
+    }
+
+    isVimeoUrl(url) {
+        return /vimeo\.com/i.test(url);
     }
 
 
-    // ===== ADMIN =====
+    // ═══════ ADMIN - ADD CONTENT ═══════
     bindAdmin() {
-        const form = document.getElementById('addContentForm');
-        form.addEventListener('submit', (e) => {
+        document.getElementById('addContentForm').addEventListener('submit', (e) => {
             e.preventDefault();
             this.addContent();
         });
-
         document.getElementById('exportData').addEventListener('click', () => this.exportData());
         document.getElementById('importData').addEventListener('click', () => document.getElementById('importFile').click());
         document.getElementById('importFile').addEventListener('change', (e) => this.importData(e));
+        document.getElementById('resetAllData').addEventListener('click', () => this.resetAllData());
     }
 
     addContent() {
         const title = document.getElementById('contentTitle').value.trim();
-        if (!title) return;
+        if (!title) { this.showToast('Title is required!', 'error'); return; }
 
         const newItem = {
-            id: `custom_${Date.now()}`,
+            id: `item_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
             title: title,
             type: document.getElementById('contentType').value,
             year: parseInt(document.getElementById('contentYear').value) || new Date().getFullYear(),
             rating: parseFloat(document.getElementById('contentRating').value) || null,
             genre: document.getElementById('contentGenre').value,
-            description: document.getElementById('contentDescription').value.trim(),
+            description: document.getElementById('contentDescription').value.trim() || null,
             poster: document.getElementById('contentPoster').value.trim() || null,
             backdrop: document.getElementById('contentBackdrop').value.trim() || null,
             video: document.getElementById('contentVideo').value.trim() || null,
@@ -434,15 +565,16 @@ class PriismaTv {
             duration: document.getElementById('contentDuration').value.trim() || null,
             episodes: parseInt(document.getElementById('contentEpisodes').value) || null,
             seasons: parseInt(document.getElementById('contentSeasons').value) || null,
-            tags: document.getElementById('contentTags').value.split(',').map(t => t.trim()).filter(Boolean),
+            tags: document.getElementById('contentTags').value.split(',').map(t => t.trim().toLowerCase()).filter(Boolean),
             dateAdded: new Date().toISOString().split('T')[0]
         };
 
-        this.content.push(newItem);
+        this.content.unshift(newItem); // Add to beginning
         this.saveContent();
         this.updateStats();
         document.getElementById('addContentForm').reset();
         this.showToast(`"${title}" added to your collection!`, 'success');
+        this.updateNotifBadge();
     }
 
     exportData() {
@@ -452,16 +584,19 @@ class PriismaTv {
             favorites: this.favorites,
             friends: this.friends,
             exportDate: new Date().toISOString(),
+            version: '2.0',
             app: 'PriismaTv'
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `priismatv_backup_${Date.now()}.json`;
+        a.download = `priismatv_backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        this.showToast('Collection exported successfully!', 'success');
+        this.showToast('Collection exported! Keep this backup safe.', 'success');
     }
 
     importData(e) {
@@ -471,69 +606,86 @@ class PriismaTv {
         reader.onload = (ev) => {
             try {
                 const data = JSON.parse(ev.target.result);
-                if (data.content) {
-                    this.content = data.content;
+                let imported = 0;
+                if (data.content && Array.isArray(data.content)) {
+                    data.content.forEach(item => {
+                        if (!this.content.find(c => c.id === item.id || c.title === item.title)) {
+                            this.content.push(item);
+                            imported++;
+                        }
+                    });
                     this.saveContent();
                 }
-                if (data.watchlist) {
-                    this.watchlist = data.watchlist;
-                    this.saveWatchlist();
-                }
-                if (data.favorites) {
-                    this.favorites = data.favorites;
-                    this.saveFavorites();
-                }
+                if (data.watchlist) { this.watchlist = [...new Set([...this.watchlist, ...data.watchlist])]; this.saveWatchlist(); }
+                if (data.favorites) { this.favorites = [...new Set([...this.favorites, ...data.favorites])]; this.saveFavorites(); }
                 if (data.friends) {
-                    this.friends = data.friends;
+                    data.friends.forEach(f => {
+                        if (!this.friends.find(fr => fr.name === f.name)) this.friends.push(f);
+                    });
                     this.saveFriends();
                 }
                 this.updateStats();
-                this.renderHome();
-                this.showToast('Collection imported successfully!', 'success');
+                this.navigateTo(this.currentPage);
+                this.showToast(`Imported ${imported} new items!`, 'success');
             } catch (err) {
-                this.showToast('Invalid file format', 'error');
+                this.showToast('Invalid backup file format', 'error');
             }
         };
         reader.readAsText(file);
         e.target.value = '';
     }
 
-    updateStats() {
-        const movies = this.content.filter(c => c.type === 'movie').length;
-        const anime = this.content.filter(c => c.type === 'anime').length;
-        const tv = this.content.filter(c => c.type === 'tvshow').length;
-        document.getElementById('statMovies').textContent = movies;
-        document.getElementById('statAnime').textContent = anime;
-        document.getElementById('statTV').textContent = tv;
-        document.getElementById('statTotal').textContent = this.content.length;
+    resetAllData() {
+        if (!confirm('This will DELETE all your content, watchlist, favorites, and friends. Are you sure?')) return;
+        if (!confirm('REALLY sure? This cannot be undone!')) return;
+        localStorage.removeItem(STORAGE_KEYS.CONTENT);
+        localStorage.removeItem(STORAGE_KEYS.WATCHLIST);
+        localStorage.removeItem(STORAGE_KEYS.FAVORITES);
+        localStorage.removeItem(STORAGE_KEYS.FRIENDS);
+        initializeData();
+        this.content = JSON.parse(localStorage.getItem(STORAGE_KEYS.CONTENT)) || [];
+        this.watchlist = [];
+        this.favorites = [];
+        this.friends = [];
+        this.updateStats();
+        this.navigateTo('home');
+        this.showToast('All data reset to defaults', 'info');
     }
 
 
-    // ===== FRIENDS =====
+    // ═══════ FRIENDS ═══════
     bindFriends() {
         document.getElementById('addFriendBtn').addEventListener('click', () => this.addFriend());
         document.getElementById('friendName').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') this.addFriend();
+            if (e.key === 'Enter') { e.preventDefault(); this.addFriend(); }
         });
-        document.getElementById('shareListBtn').addEventListener('click', () => this.shareList());
+        document.getElementById('shareListBtn').addEventListener('click', () => this.shareCollection());
         document.getElementById('importListBtn').addEventListener('click', () => this.importSharedList());
     }
 
     renderFriends() {
         const list = document.getElementById('friendsList');
-        list.innerHTML = this.friends.map((f, i) => `
-            <div class="friend-item">
-                <div class="avatar">${f.name.charAt(0).toUpperCase()}</div>
-                <span>${f.name}</span>
-                <button onclick="app.removeFriend(${i})" title="Remove"><i class="fas fa-times"></i></button>
-            </div>
-        `).join('') || '<p style="color: var(--text-muted); font-size: 0.85rem;">No friends added yet</p>';
+        if (this.friends.length === 0) {
+            list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem; padding: 12px 0;">No friends added yet. Add your close friends above!</p>';
+        } else {
+            list.innerHTML = this.friends.map((f, i) => `
+                <div class="friend-item">
+                    <div class="avatar">${f.name.charAt(0).toUpperCase()}</div>
+                    <span>${f.name}</span>
+                    <button onclick="app.removeFriend(${i})" title="Remove"><i class="fas fa-times"></i></button>
+                </div>
+            `).join('');
+        }
     }
 
     addFriend() {
         const input = document.getElementById('friendName');
         const name = input.value.trim();
-        if (!name) return;
+        if (!name) { this.showToast('Enter a name', 'error'); return; }
+        if (this.friends.find(f => f.name.toLowerCase() === name.toLowerCase())) {
+            this.showToast('Already in your friends list', 'info');
+            return;
+        }
         this.friends.push({ name, addedAt: new Date().toISOString() });
         this.saveFriends();
         this.renderFriends();
@@ -546,67 +698,57 @@ class PriismaTv {
         this.friends.splice(index, 1);
         this.saveFriends();
         this.renderFriends();
-        this.showToast(`${name} removed`, 'info');
+        if (name) this.showToast(`${name} removed`, 'info');
     }
 
-    shareList() {
+    shareCollection() {
         const shareData = {
+            items: this.content,
             watchlist: this.watchlist,
             favorites: this.favorites,
-            content: this.content.filter(c => this.watchlist.includes(c.id) || this.favorites.includes(c.id)),
-            sharedBy: 'PriismaTv User',
-            sharedAt: new Date().toISOString()
+            from: 'PriismaTv',
+            shared: new Date().toISOString()
         };
-        const code = btoa(JSON.stringify(shareData));
-        navigator.clipboard.writeText(code).then(() => {
-            this.showToast('Share code copied! Send it to your friends.', 'success');
-        }).catch(() => {
-            // Fallback
-            const textarea = document.createElement('textarea');
-            textarea.value = code;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            this.showToast('Share code copied!', 'success');
-        });
+        const code = btoa(unescape(encodeURIComponent(JSON.stringify(shareData))));
+        this.copyToClipboard(code);
+        this.showToast('Share code copied! Send it to your friends so they can import your collection.', 'success');
     }
 
     importSharedList() {
         const code = document.getElementById('importCode').value.trim();
-        if (!code) {
-            this.showToast('Please paste a share code', 'error');
-            return;
-        }
+        if (!code) { this.showToast('Paste a share code first', 'error'); return; }
         try {
-            const data = JSON.parse(atob(code));
-            if (data.content && Array.isArray(data.content)) {
-                let added = 0;
-                data.content.forEach(item => {
-                    if (!this.content.find(c => c.id === item.id)) {
+            const json = decodeURIComponent(escape(atob(code)));
+            const data = JSON.parse(json);
+            let added = 0;
+
+            if (data.items && Array.isArray(data.items)) {
+                data.items.forEach(item => {
+                    if (!this.content.find(c => c.id === item.id || c.title === item.title)) {
                         this.content.push(item);
                         added++;
                     }
                 });
                 this.saveContent();
-                if (data.watchlist) {
-                    data.watchlist.forEach(id => {
-                        if (!this.watchlist.includes(id)) this.watchlist.push(id);
-                    });
-                    this.saveWatchlist();
-                }
-                this.showToast(`Imported ${added} new items from shared list!`, 'success');
-                document.getElementById('importCode').value = '';
-            } else {
-                this.showToast('Invalid share code format', 'error');
             }
+
+            if (data.watchlist && Array.isArray(data.watchlist)) {
+                data.watchlist.forEach(id => {
+                    if (!this.watchlist.includes(id)) this.watchlist.push(id);
+                });
+                this.saveWatchlist();
+            }
+
+            this.updateStats();
+            document.getElementById('importCode').value = '';
+            this.showToast(`Imported ${added} new items from your friend's collection!`, 'success');
         } catch (err) {
-            this.showToast('Could not decode share code', 'error');
+            this.showToast('Invalid share code. Make sure you copied it completely.', 'error');
         }
     }
 
 
-    // ===== WATCHLIST & FAVORITES =====
+    // ═══════ WATCHLIST & FAVORITES ═══════
     toggleWatchlist(id) {
         const idx = this.watchlist.indexOf(id);
         if (idx > -1) {
@@ -617,6 +759,7 @@ class PriismaTv {
             this.showToast('Added to watchlist!', 'success');
         }
         this.saveWatchlist();
+        this.updateNotifBadge();
     }
 
     toggleFavorite(id) {
@@ -626,62 +769,108 @@ class PriismaTv {
             this.showToast('Removed from favorites', 'info');
         } else {
             this.favorites.push(id);
-            this.showToast('Added to favorites! ❤️', 'success');
+            this.showToast('Added to favorites!', 'success');
         }
         this.saveFavorites();
     }
 
-    // ===== HELPERS =====
+    // ═══════ HELPERS ═══════
     getByTag(tag) {
         return this.content.filter(c => c.tags && c.tags.includes(tag));
     }
 
     getRecent() {
-        return [...this.content].sort((a, b) => 
+        return [...this.content].sort((a, b) =>
             new Date(b.dateAdded || 0) - new Date(a.dateAdded || 0)
-        ).slice(0, 12);
+        ).slice(0, 15);
     }
 
     filterAndSort(items, genre, sort) {
-        if (genre !== 'all') {
+        if (genre && genre !== 'all') {
             items = items.filter(i => i.genre === genre);
         }
-        switch(sort) {
-            case 'rating':
-                items.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-                break;
-            case 'title':
-                items.sort((a, b) => a.title.localeCompare(b.title));
-                break;
-            case 'newest':
-            default:
-                items.sort((a, b) => (b.year || 0) - (a.year || 0));
-                break;
+        switch (sort) {
+            case 'rating': items.sort((a, b) => (b.rating || 0) - (a.rating || 0)); break;
+            case 'title': items.sort((a, b) => a.title.localeCompare(b.title)); break;
+            case 'newest': default: items.sort((a, b) => (b.year || 0) - (a.year || 0)); break;
         }
         return items;
     }
 
-    // ===== STORAGE =====
+    formatType(type) {
+        if (type === 'tvshow') return 'TV Show';
+        if (type === 'anime') return 'Anime';
+        return 'Movie';
+    }
+
+    capitalizeFirst(str) {
+        return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+    }
+
+    getPlaceholder(title) {
+        const encoded = encodeURIComponent(title || '?');
+        return `https://via.placeholder.com/300x450/13132a/00d4ff?text=${encoded}`;
+    }
+
+    updateNotifBadge() {
+        const badge = document.getElementById('notifBadge');
+        badge.textContent = this.watchlist.length;
+        badge.style.display = this.watchlist.length > 0 ? 'flex' : 'none';
+    }
+
+    updateStats() {
+        const movies = this.content.filter(c => c.type === 'movie').length;
+        const anime = this.content.filter(c => c.type === 'anime').length;
+        const tv = this.content.filter(c => c.type === 'tvshow').length;
+        document.getElementById('statMovies').textContent = movies;
+        document.getElementById('statAnime').textContent = anime;
+        document.getElementById('statTV').textContent = tv;
+        document.getElementById('statTotal').textContent = this.content.length;
+    }
+
+    // ═══════ STORAGE ═══════
     saveContent() { localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(this.content)); }
     saveWatchlist() { localStorage.setItem(STORAGE_KEYS.WATCHLIST, JSON.stringify(this.watchlist)); }
     saveFavorites() { localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(this.favorites)); }
     saveFriends() { localStorage.setItem(STORAGE_KEYS.FRIENDS, JSON.stringify(this.friends)); }
 
-    // ===== TOAST =====
+    // ═══════ CLIPBOARD ═══════
+    copyToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).catch(() => this.fallbackCopy(text));
+        } else {
+            this.fallbackCopy(text);
+        }
+    }
+
+    fallbackCopy(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    }
+
+    // ═══════ TOAST NOTIFICATIONS ═══════
     showToast(message, type = 'info') {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle';
-        toast.innerHTML = `<i class="fas fa-${icon}"></i> ${message}`;
+        const icons = { success: 'check-circle', error: 'exclamation-circle', info: 'info-circle' };
+        toast.innerHTML = `<i class="fas fa-${icons[type] || icons.info}"></i><span>${message}</span>`;
         container.appendChild(toast);
+
         setTimeout(() => {
             toast.style.opacity = '0';
             toast.style.transform = 'translateX(100%)';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
+            toast.style.transition = 'all 0.4s ease';
+            setTimeout(() => toast.remove(), 400);
+        }, 3500);
     }
 }
 
-// Initialize app
+// ═══════ INITIALIZE ═══════
 const app = new PriismaTv();

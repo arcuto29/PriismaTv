@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PriismaTv - Your Personal Streaming Hub</title>
+    <meta name="description" content="PriismaTv - Premium personal streaming collection for movies, anime, and TV shows">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/animations.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -33,8 +35,8 @@
         </ul>
         <div class="sidebar-footer">
             <div class="user-info">
-                <div class="avatar" id="userAvatar">V</div>
-                <span id="userName">Vault User</span>
+                <div class="avatar" id="userAvatar">P</div>
+                <span id="userName">PriismaTv User</span>
             </div>
         </div>
     </nav>
@@ -53,36 +55,37 @@
                     <i class="fas fa-bell"></i>
                     <span class="notif-badge" id="notifBadge">0</span>
                 </button>
-                <button class="theme-toggle" id="themeToggle">
-                    <i class="fas fa-palette"></i>
+                <button class="theme-toggle" id="themeToggle" title="Toggle sidebar">
+                    <i class="fas fa-columns"></i>
                 </button>
             </div>
         </header>
 
         <!-- Page Container -->
         <div class="page-container" id="pageContainer">
+
+
             <!-- Home Page -->
             <section class="page active" id="page-home">
-                <!-- Hero Section -->
                 <div class="hero" id="heroSection">
-                    <div class="hero-backdrop"></div>
+                    <div class="hero-backdrop" id="heroBackdrop"></div>
                     <div class="hero-content">
-                        <span class="hero-badge">Featured</span>
+                        <span class="hero-badge"><i class="fas fa-crown"></i> Featured</span>
                         <h1 id="heroTitle">Welcome to PriismaTv</h1>
-                        <p id="heroDescription">Your premium personal streaming collection. Add your favorite movies, anime, and TV shows. Share with friends.</p>
+                        <p id="heroDescription">Your premium personal streaming collection. Add your favorite movies, anime, and TV shows. Share with close friends.</p>
                         <div class="hero-meta" id="heroMeta"></div>
                         <div class="hero-actions">
                             <button class="btn btn-primary" id="heroWatch"><i class="fas fa-play"></i> Watch Now</button>
                             <button class="btn btn-secondary" id="heroInfo"><i class="fas fa-info-circle"></i> More Info</button>
+                            <button class="btn btn-icon" id="heroFav" title="Add to favorites"><i class="fas fa-heart"></i></button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Content Rows -->
                 <div class="content-section">
                     <div class="section-header">
                         <h2><i class="fas fa-fire"></i> Trending Now</h2>
-                        <a href="#" class="see-all" data-filter="trending">See All</a>
+                        <a href="#" class="see-all" data-page="movies">See All</a>
                     </div>
                     <div class="content-row" id="trendingRow"></div>
                 </div>
@@ -90,7 +93,7 @@
                 <div class="content-section">
                     <div class="section-header">
                         <h2><i class="fas fa-clock"></i> Recently Added</h2>
-                        <a href="#" class="see-all" data-filter="recent">See All</a>
+                        <a href="#" class="see-all" data-page="movies">See All</a>
                     </div>
                     <div class="content-row" id="recentRow"></div>
                 </div>
@@ -98,7 +101,7 @@
                 <div class="content-section">
                     <div class="section-header">
                         <h2><i class="fas fa-star"></i> Top Rated</h2>
-                        <a href="#" class="see-all" data-filter="toprated">See All</a>
+                        <a href="#" class="see-all" data-page="movies">See All</a>
                     </div>
                     <div class="content-row" id="topRatedRow"></div>
                 </div>
@@ -111,6 +114,7 @@
                     <div class="content-row" id="animeRow"></div>
                 </div>
             </section>
+
 
             <!-- Movies Page -->
             <section class="page" id="page-movies">
@@ -127,6 +131,7 @@
                             <option value="thriller">Thriller</option>
                             <option value="romance">Romance</option>
                             <option value="fantasy">Fantasy</option>
+                            <option value="animation">Animation</option>
                         </select>
                         <select id="movieSortFilter" class="filter-select">
                             <option value="newest">Newest First</option>
@@ -180,6 +185,7 @@
                             <option value="sci-fi">Sci-Fi</option>
                             <option value="thriller">Thriller</option>
                             <option value="documentary">Documentary</option>
+                            <option value="fantasy">Fantasy</option>
                         </select>
                         <select id="tvSortFilter" class="filter-select">
                             <option value="newest">Newest First</option>
@@ -191,20 +197,21 @@
                 <div class="content-grid" id="tvshowsGrid"></div>
             </section>
 
+
             <!-- Watchlist Page -->
             <section class="page" id="page-watchlist">
                 <div class="page-header">
                     <h1><i class="fas fa-bookmark"></i> My Watchlist</h1>
                     <div class="watchlist-stats">
                         <span id="watchlistCount">0 items</span>
-                        <button class="btn btn-small" id="clearWatchlist"><i class="fas fa-trash"></i> Clear All</button>
+                        <button class="btn btn-small btn-secondary" id="clearWatchlist"><i class="fas fa-trash"></i> Clear All</button>
                     </div>
                 </div>
                 <div class="content-grid" id="watchlistGrid"></div>
                 <div class="empty-state" id="watchlistEmpty">
                     <i class="fas fa-bookmark"></i>
                     <h3>Your watchlist is empty</h3>
-                    <p>Add movies, anime, and TV shows to watch later</p>
+                    <p>Browse and add movies, anime, and TV shows to watch later</p>
                 </div>
             </section>
 
@@ -228,30 +235,33 @@
             <section class="page" id="page-friends">
                 <div class="page-header">
                     <h1><i class="fas fa-users"></i> Friends</h1>
-                    <button class="btn btn-primary" id="shareListBtn"><i class="fas fa-share"></i> Share My List</button>
+                    <button class="btn btn-primary" id="shareListBtn"><i class="fas fa-share-alt"></i> Share My Collection</button>
                 </div>
                 <div class="friends-container">
                     <div class="friends-section">
-                        <h3>Invite Friends</h3>
+                        <h3><i class="fas fa-user-plus"></i> Add Friends</h3>
                         <div class="invite-form">
-                            <input type="text" id="friendName" placeholder="Friend's name">
-                            <button class="btn btn-primary" id="addFriendBtn"><i class="fas fa-plus"></i> Add</button>
+                            <input type="text" id="friendName" placeholder="Friend's name...">
+                            <button class="btn btn-primary btn-small" id="addFriendBtn"><i class="fas fa-plus"></i> Add</button>
                         </div>
                         <div class="friends-list" id="friendsList"></div>
                     </div>
                     <div class="friends-section">
-                        <h3>Shared Watchlists</h3>
-                        <div class="shared-lists" id="sharedLists"></div>
+                        <h3><i class="fas fa-link"></i> Share & Import</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">
+                            Share your collection with friends or import theirs using share codes.
+                        </p>
                         <div class="import-section">
-                            <h4>Import a Shared List</h4>
-                            <textarea id="importCode" placeholder="Paste shared list code here..."></textarea>
-                            <button class="btn btn-secondary" id="importListBtn"><i class="fas fa-download"></i> Import</button>
+                            <h4>Import a Shared Collection</h4>
+                            <textarea id="importCode" placeholder="Paste your friend's share code here..."></textarea>
+                            <button class="btn btn-secondary btn-block" id="importListBtn"><i class="fas fa-download"></i> Import Collection</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Admin Page -->
+
+            <!-- Admin Page - Add Content -->
             <section class="page" id="page-admin">
                 <div class="page-header">
                     <h1><i class="fas fa-plus-circle"></i> Add Content</h1>
@@ -260,7 +270,7 @@
                     <form id="addContentForm" class="admin-form">
                         <div class="form-group">
                             <label>Title *</label>
-                            <input type="text" id="contentTitle" required placeholder="Enter title...">
+                            <input type="text" id="contentTitle" required placeholder="e.g. Spirited Away, Breaking Bad...">
                         </div>
                         <div class="form-row">
                             <div class="form-group">
@@ -276,7 +286,7 @@
                                 <input type="number" id="contentYear" placeholder="2024" min="1900" max="2030">
                             </div>
                             <div class="form-group">
-                                <label>Rating</label>
+                                <label>Rating (0-10)</label>
                                 <input type="number" id="contentRating" placeholder="8.5" min="0" max="10" step="0.1">
                             </div>
                         </div>
@@ -286,6 +296,7 @@
                                 <option value="action">Action</option>
                                 <option value="adventure">Adventure</option>
                                 <option value="comedy">Comedy</option>
+                                <option value="crime">Crime</option>
                                 <option value="drama">Drama</option>
                                 <option value="fantasy">Fantasy</option>
                                 <option value="horror">Horror</option>
@@ -295,30 +306,30 @@
                                 <option value="shonen">Shonen</option>
                                 <option value="slice-of-life">Slice of Life</option>
                                 <option value="thriller">Thriller</option>
-                                <option value="crime">Crime</option>
                                 <option value="documentary">Documentary</option>
+                                <option value="animation">Animation</option>
                             </select>
                         </div>
                         <div class="form-group">
                             <label>Description</label>
-                            <textarea id="contentDescription" placeholder="Brief description..." rows="3"></textarea>
+                            <textarea id="contentDescription" placeholder="What's this about?" rows="3"></textarea>
                         </div>
                         <div class="form-group">
                             <label>Poster Image URL</label>
-                            <input type="url" id="contentPoster" placeholder="https://image-url.com/poster.jpg">
-                            <small>Paste a direct image URL or use a placeholder</small>
+                            <input type="url" id="contentPoster" placeholder="https://image.tmdb.org/t/p/w500/...">
+                            <small>Tip: Search on TMDB.org for poster images</small>
                         </div>
                         <div class="form-group">
                             <label>Backdrop Image URL</label>
-                            <input type="url" id="contentBackdrop" placeholder="https://image-url.com/backdrop.jpg">
+                            <input type="url" id="contentBackdrop" placeholder="https://image.tmdb.org/t/p/original/...">
                         </div>
                         <div class="form-group">
-                            <label>Video/Stream URL (optional)</label>
-                            <input type="url" id="contentVideo" placeholder="https://video-url.com/stream">
-                            <small>Direct video link, magnet link, or embed URL</small>
+                            <label>Video/Stream URL</label>
+                            <input type="url" id="contentVideo" placeholder="https://... (direct video, YouTube embed, etc.)">
+                            <small>YouTube, Vimeo, direct MP4 link, or any embed URL</small>
                         </div>
                         <div class="form-group">
-                            <label>Torrent/Magnet Link (optional)</label>
+                            <label>Magnet/Torrent Link</label>
                             <input type="text" id="contentMagnet" placeholder="magnet:?xt=urn:btih:...">
                         </div>
                         <div class="form-row">
@@ -327,17 +338,17 @@
                                 <input type="text" id="contentDuration" placeholder="2h 15m">
                             </div>
                             <div class="form-group">
-                                <label>Episodes (for series)</label>
+                                <label>Episodes</label>
                                 <input type="number" id="contentEpisodes" placeholder="24">
                             </div>
                             <div class="form-group">
-                                <label>Seasons (for series)</label>
+                                <label>Seasons</label>
                                 <input type="number" id="contentSeasons" placeholder="1">
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Tags (comma separated)</label>
-                            <input type="text" id="contentTags" placeholder="trending, popular, must-watch">
+                            <input type="text" id="contentTags" placeholder="trending, must-watch, top-rated">
                         </div>
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary btn-large"><i class="fas fa-plus"></i> Add to Collection</button>
@@ -347,21 +358,31 @@
 
                     <div class="admin-sidebar">
                         <div class="admin-panel">
-                            <h3><i class="fas fa-database"></i> Collection Stats</h3>
+                            <h3><i class="fas fa-chart-bar"></i> Collection Stats</h3>
                             <div class="stat-item"><span>Movies</span><strong id="statMovies">0</strong></div>
                             <div class="stat-item"><span>Anime</span><strong id="statAnime">0</strong></div>
                             <div class="stat-item"><span>TV Shows</span><strong id="statTV">0</strong></div>
                             <div class="stat-item"><span>Total</span><strong id="statTotal">0</strong></div>
                         </div>
                         <div class="admin-panel">
-                            <h3><i class="fas fa-download"></i> Export / Import</h3>
+                            <h3><i class="fas fa-database"></i> Backup & Restore</h3>
                             <button class="btn btn-secondary btn-block" id="exportData"><i class="fas fa-file-export"></i> Export Collection</button>
                             <button class="btn btn-secondary btn-block" id="importData"><i class="fas fa-file-import"></i> Import Collection</button>
                             <input type="file" id="importFile" accept=".json" hidden>
+                            <small style="display:block; margin-top: 8px; color: var(--text-muted); font-size: 0.73rem;">
+                                Export saves everything as JSON. Import from a previous backup.
+                            </small>
+                        </div>
+                        <div class="admin-panel">
+                            <h3><i class="fas fa-eraser"></i> Danger Zone</h3>
+                            <button class="btn btn-secondary btn-block" id="resetAllData" style="border-color: #ff4444; color: #ff4444;">
+                                <i class="fas fa-trash-alt"></i> Reset All Data
+                            </button>
                         </div>
                     </div>
                 </div>
             </section>
+
 
             <!-- Detail Modal -->
             <div class="modal" id="detailModal">
@@ -378,7 +399,8 @@
                                 <button class="btn btn-primary" id="modalWatch"><i class="fas fa-play"></i> Watch</button>
                                 <button class="btn btn-secondary" id="modalWatchlist"><i class="fas fa-bookmark"></i> Watchlist</button>
                                 <button class="btn btn-icon" id="modalFavorite"><i class="fas fa-heart"></i></button>
-                                <button class="btn btn-icon" id="modalShare"><i class="fas fa-share"></i></button>
+                                <button class="btn btn-icon" id="modalShare"><i class="fas fa-share-alt"></i></button>
+                                <button class="btn btn-icon" id="modalDelete" title="Delete"><i class="fas fa-trash"></i></button>
                             </div>
                             <div class="modal-links" id="modalLinks"></div>
                         </div>
@@ -387,6 +409,12 @@
             </div>
         </div>
     </main>
+
+    <!-- Video Player Overlay -->
+    <div class="video-player-container" id="videoPlayer">
+        <button class="video-player-close" id="videoPlayerClose"><i class="fas fa-times"></i></button>
+        <div id="videoPlayerContent"></div>
+    </div>
 
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
