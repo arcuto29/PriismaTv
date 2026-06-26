@@ -398,15 +398,10 @@ class PriismaTv {
             <span><i class="fas fa-${item.type === 'movie' ? 'film' : item.type === 'anime' ? 'dragon' : 'tv'}"></i> ${this.formatType(item.type)}</span>
         `;
 
-        // Watch button
+        // Watch button - always try to play (auto-finds stream if needed)
         const watchBtn = document.getElementById('modalWatch');
-        if (item.video || item.magnet) {
-            watchBtn.style.opacity = '1';
-            watchBtn.onclick = () => this.playContent(item);
-        } else {
-            watchBtn.style.opacity = '0.5';
-            watchBtn.onclick = () => this.showToast('No stream link added yet. Edit in Add Content.', 'info');
-        }
+        watchBtn.style.opacity = '1';
+        watchBtn.onclick = () => this.playContent(item);
 
         // Watchlist button
         const wlBtn = document.getElementById('modalWatchlist');
