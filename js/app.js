@@ -551,13 +551,11 @@ class PriismaTv {
         // Anime-specific sources (best quality anime streaming)
         if (isAnime) {
             return [
-                { name: 'AniWatch (HD)', url: `https://aniwatch.to/search?keyword=${title}` },
-                { name: 'Aniwave', url: `https://aniwave.to/filter?keyword=${title}` },
-                { name: 'GoGoAnime', url: `https://anitaku.pe/search.html?keyword=${title}` },
-                { name: 'Zoro (1080p)', url: `https://hianime.to/search?keyword=${title}` },
+                { name: 'Aniwave (HD)', url: `https://aniwaves.ru/search?keyword=${title}` },
                 { name: '4K Embed', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=1&e=1` },
+                { name: '1080p HD', url: `https://vidsrc.xyz/embed/tv/${imdbId}/1/1` },
                 { name: 'AutoEmbed', url: `https://player.autoembed.cc/embed/tv/${imdbId}/1/1` },
-                { name: '9Anime', url: `https://9animetv.to/search?keyword=${title}` },
+                { name: 'Vidsrc', url: `https://vidsrc.to/embed/tv/${imdbId}/1/1` },
             ];
         }
 
@@ -587,9 +585,7 @@ class PriismaTv {
         
         // If it's a search/torrent/external link, open in new tab
         if (url.includes('yifysearch') || url.includes('yts.mx') || 
-            url.includes('aniwatch.to/search') || url.includes('aniwave.to/filter') || 
-            url.includes('anitaku.pe/search') || url.includes('hianime.to/search') ||
-            url.includes('9animetv.to/search')) {
+            url.includes('aniwaves.ru/search')) {
             window.open(url, '_blank');
             this.showToast('Opening in new tab...', 'info');
             return;
