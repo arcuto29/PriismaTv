@@ -535,12 +535,30 @@ class PriismaTv {
     // Multiple HD 1080p+ sources - if one has ads or doesn't work, click another
     getHDSources(imdbId, type) {
         const isMovie = type === 'movie';
+        const isAnime = this.currentDetailItem?.type === 'anime';
+        const title = encodeURIComponent(this.currentDetailItem?.title || '');
+        const titleSlug = this.titleToSlug(this.currentDetailItem?.title);
+
+        // Anime-specific sources (best quality anime streaming)
+        if (isAnime) {
+            return [
+                { name: 'AniWatch (HD)', url: `https://aniwatch.to/search?keyword=${title}` },
+                { name: 'Aniwave', url: `https://aniwave.to/filter?keyword=${title}` },
+                { name: 'GoGoAnime', url: `https://anitaku.pe/search.html?keyword=${title}` },
+                { name: 'Zoro (1080p)', url: `https://hianime.to/search?keyword=${title}` },
+                { name: '4K Embed', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=1&e=1` },
+                { name: 'AutoEmbed', url: `https://player.autoembed.cc/embed/tv/${imdbId}/1/1` },
+                { name: '9Anime', url: `https://9animetv.to/search?keyword=${title}` },
+            ];
+        }
+
+        // Movies & TV shows sources
         return [
             { name: '4K Ultra HD', url: isMovie ? `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` : `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=1&e=1` },
             { name: '1080p HD', url: isMovie ? `https://vidsrc.xyz/embed/movie/${imdbId}` : `https://vidsrc.xyz/embed/tv/${imdbId}/1/1` },
             { name: '1080p (Alt)', url: isMovie ? `https://vidsrc.to/embed/movie/${imdbId}` : `https://vidsrc.to/embed/tv/${imdbId}/1/1` },
             { name: '1080p Fast', url: isMovie ? `https://player.autoembed.cc/embed/movie/${imdbId}` : `https://player.autoembed.cc/embed/tv/${imdbId}/1/1` },
-            { name: 'YTS 1080p/4K', url: isMovie ? `https://yifysearch.com/search/${encodeURIComponent(this.currentDetailItem?.title || '')}` : null },
+            { name: 'YTS 1080p/4K', url: isMovie ? `https://yifysearch.com/search/${title}` : null },
         ].filter(s => s.url !== null);
     }
 
@@ -558,9 +576,13 @@ class PriismaTv {
         document.querySelectorAll('.video-source-bar button').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         
-        // If it's a YTS/torrent link, open in new tab
-        if (url.includes('yifysearch') || url.includes('yts.mx') || url.includes('1337x') || url.includes('rarbg')) {
+        // If it's a search/torrent/external link, open in new tab
+        if (url.includes('yifysearch') || url.includes('yts.mx') || 
+            url.includes('aniwatch.to/search') || url.includes('aniwave.to/filter') || 
+            url.includes('anitaku.pe/search') || url.includes('hianime.to/search') ||
+            url.includes('9animetv.to/search')) {
             window.open(url, '_blank');
+            this.showToast('Opening in new tab...', 'info');
             return;
         }
         
@@ -572,7 +594,9 @@ class PriismaTv {
     // Auto-find streaming link when no video URL is saved
     async autoStreamFromTitle(item) {
         this.showToast('Finding stream...', 'info');
+        this.currentDetailItem = item; // Store for source switcher
         const TMDB_API_KEY = '2dca580c2a14b55200e784d157207b4d';
+        // Anime and TV shows search as 'tv', movies search as 'movie'
         const searchType = item.type === 'movie' ? 'movie' : 'tv';
 
         try {
