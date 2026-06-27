@@ -29,19 +29,18 @@ class PriismaTv {
         this.fixMissingPosters();
     }
 
-    // Auto-fix items with broken/missing poster images
+    // Auto-fix ALL items - fetch real poster images from TMDB
     async fixMissingPosters() {
         const TMDB_API_KEY = '2dca580c2a14b55200e784d157207b4d';
         let updated = false;
+        let fixed = 0;
 
         for (let item of this.content) {
-            // Skip if poster exists and is a valid TMDB URL with a real path
-            if (item.poster && item.poster.includes('tmdb.org') && !item.poster.includes('placeholder')) {
-                // Test if the image actually loads by checking it's not a generic path
-                continue;
-            }
+            // Check if poster loads by testing the URL format
+            // TMDB paths should be valid — but many we have are made up
+            // Force re-fetch for any item that hasn't been verified
+            if (item.posterVerified) continue;
 
-            // Need to fetch poster from TMDB
             try {
                 const searchType = item.type === 'movie' ? 'movie' : 'tv';
                 const res = await fetch(
@@ -53,12 +52,15 @@ class PriismaTv {
                     if (result.poster_path) {
                         item.poster = `https://image.tmdb.org/t/p/w500${result.poster_path}`;
                         updated = true;
+                        fixed++;
                     }
                     if (result.backdrop_path) {
                         item.backdrop = `https://image.tmdb.org/t/p/original${result.backdrop_path}`;
-                        updated = true;
                     }
+                    item.posterVerified = true;
                 }
+                // Small delay to avoid rate limiting
+                await new Promise(r => setTimeout(r, 250));
             } catch (e) {
                 // Skip failed fetches
             }
@@ -66,7 +68,10 @@ class PriismaTv {
 
         if (updated) {
             this.saveContent();
-            this.renderHome(); // Re-render with new images
+            this.renderHome();
+            if (fixed > 0) {
+                this.showToast(`Updated ${fixed} cover images`, 'success');
+            }
         }
     }
 
