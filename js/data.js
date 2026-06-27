@@ -367,6 +367,24 @@ const SAMPLE_CONTENT = [
         trailer: 'q15CRdE5Bv0', episodes: 12, seasons: 1,
         tags: ['trending', 'must-watch'], dateAdded: '2024-03-08'
     },
+
+    // ═══════ BLEACH (COMPLETE) ═══════
+    {
+        id: 'ani_bleach', title: 'Bleach', type: 'anime', year: 2004, rating: 8.2, genre: 'action',
+        description: 'Ichigo Kurosaki gains Soul Reaper powers and must protect the living world from evil spirits called Hollows while uncovering a conspiracy within the Soul Society.',
+        poster: 'https://image.tmdb.org/t/p/w500/2EbBkCoKB68YgnPbQOlStmlySqD.jpg',
+        backdrop: 'https://image.tmdb.org/t/p/original/qtfMRKYbWoX1DsgnkrU4YkuKUoE.jpg',
+        trailer: '--IcmZkvL0Q', episodes: 366, seasons: 16,
+        tags: ['top-rated', 'must-watch', 'trending'], dateAdded: '2024-01-01'
+    },
+    {
+        id: 'ani_bleach_tybw', title: 'Bleach: Thousand-Year Blood War', type: 'anime', year: 2022, rating: 9.1, genre: 'action',
+        description: 'The final arc of Bleach. The Wandenreich, a hidden empire of Quincies, declares war on the Soul Society. Ichigo must unlock his true power to face their leader, Yhwach.',
+        poster: 'https://image.tmdb.org/t/p/w500/iS3nIoMZPXqJBKmW8DkutfijqLh.jpg',
+        backdrop: 'https://image.tmdb.org/t/p/original/sV77RkH7NJCxQaEGJzIyJOsVQ2G.jpg',
+        trailer: 'e8YBesRKq_U', episodes: 52, seasons: 4,
+        tags: ['trending', 'must-watch', 'top-rated'], dateAdded: '2024-03-25'
+    },
 ];
 
 // ═══════ INITIALIZE DATA ═══════
