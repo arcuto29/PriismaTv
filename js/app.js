@@ -569,7 +569,7 @@ class PriismaTv {
         this.closeModal();
     }
 
-    // Embed sources - ONLY the ones that actually work
+    // Embed sources - CONFIRMED WORKING formats
     getEmbedSources(imdbId, type, season = 1, episode = 1) {
         const isMovie = type === 'movie';
         const tmdbId = this.currentDetailItem?.tmdbId || '';
@@ -578,17 +578,21 @@ class PriismaTv {
 
         if (isMovie) {
             return [
-                { name: 'Server 1 (Best)', url: `https://player.autoembed.cc/embed/movie/${imdbId}` },
-                { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` },
-                { name: 'Server 3', url: `https://moviesapi.club/movie/${imdbId}` },
+                { name: 'Server 1', url: `https://autoembed.co/movie/imdb/${imdbId}` },
+                { name: 'Server 2', url: `https://2embed.cc/embed/${imdbId}` },
+                { name: 'Server 3', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` },
+                { name: 'Server 4', url: `https://vidsrc.wiki/embed/movie/${imdbId}` },
+                { name: 'Server 5', url: `https://vidsrc.me/embed/movie?imdb=${imdbId}` },
             ];
         }
 
         // TV Shows & Anime - with season/episode
         return [
-            { name: 'Server 1 (Best)', url: `https://player.autoembed.cc/embed/tv/${imdbId}/${s}/${e}` },
-            { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}` },
-            { name: 'Server 3', url: `https://moviesapi.club/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 1', url: `https://autoembed.co/tv/imdb/${imdbId}-${s}-${e}` },
+            { name: 'Server 2', url: `https://2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
+            { name: 'Server 3', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}` },
+            { name: 'Server 4', url: `https://vidsrc.wiki/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 5', url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}` },
         ];
     }
 
@@ -668,10 +672,10 @@ class PriismaTv {
                 return;
             }
 
-            // Generate streaming URL - uses vidsrc.in which embeds cleanly
+            // Generate streaming URL - autoembed.co confirmed working
             const streamUrl = searchType === 'movie'
-                ? `https://vidsrc.in/embed/movie/${imdbId}`
-                : `https://vidsrc.in/embed/tv/${imdbId}/1/1`;
+                ? `https://autoembed.co/movie/imdb/${imdbId}`
+                : `https://autoembed.co/tv/imdb/${imdbId}-1-1`;
 
             // Save it to the item so it doesn't have to look it up again
             item.video = streamUrl;
@@ -892,10 +896,10 @@ class PriismaTv {
                 const imdbId = ids.imdb_id;
 
                 if (imdbId) {
-                    // Use vidsrc.in - confirmed working embed API
+                    // Use autoembed.co - confirmed working embed
                     const streamUrl = type === 'movie'
-                        ? `https://vidsrc.in/embed/movie/${imdbId}`
-                        : `https://vidsrc.in/embed/tv/${imdbId}/1/1`;
+                        ? `https://autoembed.co/movie/imdb/${imdbId}`
+                        : `https://autoembed.co/tv/imdb/${imdbId}-1-1`;
                     document.getElementById('contentVideo').value = streamUrl;
 
                     // Also fetch trailer
