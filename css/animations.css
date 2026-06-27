@@ -1,295 +1,319 @@
 /* ═══════════════════════════════════════════════════════════
-   PriismaTv - PREMIUM Animations & Effects
-   Cinema-quality visual experience
+   PriismaTv - ULTRA PREMIUM Animations & Effects
+   Matching Framer Motion / GSAP / Aceternity UI aesthetics
 ═══════════════════════════════════════════════════════════ */
 
-/* ═══════ CARD ENTRANCE ═══════ */
+/* ═══════ CARD ENTRANCE (Framer Motion style stagger) ═══════ */
 .content-card {
-    animation: cardReveal 0.6s ease backwards;
+    animation: cardReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    will-change: transform, opacity;
 }
-.content-card:nth-child(1) { animation-delay: 0.03s; }
-.content-card:nth-child(2) { animation-delay: 0.06s; }
-.content-card:nth-child(3) { animation-delay: 0.09s; }
-.content-card:nth-child(4) { animation-delay: 0.12s; }
-.content-card:nth-child(5) { animation-delay: 0.15s; }
-.content-card:nth-child(6) { animation-delay: 0.18s; }
-.content-card:nth-child(7) { animation-delay: 0.21s; }
-.content-card:nth-child(8) { animation-delay: 0.24s; }
-.content-card:nth-child(9) { animation-delay: 0.27s; }
-.content-card:nth-child(10) { animation-delay: 0.3s; }
+.content-card:nth-child(1) { animation-delay: 0.02s; }
+.content-card:nth-child(2) { animation-delay: 0.04s; }
+.content-card:nth-child(3) { animation-delay: 0.06s; }
+.content-card:nth-child(4) { animation-delay: 0.08s; }
+.content-card:nth-child(5) { animation-delay: 0.1s; }
+.content-card:nth-child(6) { animation-delay: 0.12s; }
+.content-card:nth-child(7) { animation-delay: 0.14s; }
+.content-card:nth-child(8) { animation-delay: 0.16s; }
+.content-card:nth-child(9) { animation-delay: 0.18s; }
+.content-card:nth-child(10) { animation-delay: 0.2s; }
 
 @keyframes cardReveal {
-    from { opacity: 0; transform: translateY(40px) scale(0.92); filter: blur(4px); }
-    to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    from { opacity: 0; transform: translateY(50px) scale(0.9) rotateX(8deg); filter: blur(6px); }
+    to { opacity: 1; transform: translateY(0) scale(1) rotateX(0); filter: blur(0); }
 }
 
-/* ═══════ CARD NEON GLOW ON HOVER ═══════ */
+/* ═══════ ACETERNITY SPOTLIGHT CARD EFFECT ═══════ */
+.content-card {
+    position: relative;
+    overflow: visible;
+}
 .content-card::before {
     content: '';
     position: absolute;
     inset: -2px;
     border-radius: var(--radius-lg);
-    background: linear-gradient(135deg, #00d4ff, #6c5ce7, #00d4ff);
-    background-size: 300% 300%;
+    background: conic-gradient(from var(--angle, 0deg), transparent 60%, #00d4ff 75%, #6c5ce7 85%, transparent 95%);
     opacity: 0;
     transition: opacity 0.5s ease;
     z-index: -1;
-    filter: blur(10px);
-    animation: borderGlow 3s ease infinite;
+    filter: blur(6px);
+    animation: rotateBorder 4s linear infinite;
 }
 .content-card:hover::before {
-    opacity: 0.4;
+    opacity: 0.5;
+}
+@property --angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+@keyframes rotateBorder {
+    to { --angle: 360deg; }
 }
 
-@keyframes borderGlow {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+/* ═══════ MAGIC UI AURORA GLOW ═══════ */
+.hero::after {
+    animation: auroraShift 8s ease-in-out infinite alternate;
+}
+@keyframes auroraShift {
+    0% { opacity: 0.85; }
+    50% { opacity: 0.9; }
+    100% { opacity: 0.85; }
 }
 
-/* ═══════ LOGO NEON PULSE ═══════ */
+/* ═══════ GSAP-STYLE SCROLL REVEAL ═══════ */
+.content-section {
+    animation: sectionSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.content-section:nth-child(1) { animation-delay: 0s; }
+.content-section:nth-child(2) { animation-delay: 0.1s; }
+.content-section:nth-child(3) { animation-delay: 0.2s; }
+.content-section:nth-child(4) { animation-delay: 0.3s; }
+.content-section:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes sectionSlideUp {
+    from { opacity: 0; transform: translateY(60px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════ FRAMER MOTION LOGO SPRING ═══════ */
 .logo i {
-    animation: logoPulse 2.5s ease-in-out infinite;
+    animation: logoSpring 3s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+@keyframes logoSpring {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(0,212,255,0.4)); }
+    15% { transform: scale(1.15); filter: drop-shadow(0 0 20px rgba(0,212,255,0.8)) drop-shadow(0 0 40px rgba(108,92,231,0.4)); }
+    30% { transform: scale(0.95); }
+    45% { transform: scale(1.05); }
+    60% { transform: scale(1); }
 }
 
-@keyframes logoPulse {
-    0%, 100% { filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.4)) drop-shadow(0 0 12px rgba(0, 212, 255, 0.2)); }
-    50% { filter: drop-shadow(0 0 12px rgba(0, 212, 255, 0.8)) drop-shadow(0 0 30px rgba(0, 212, 255, 0.4)) drop-shadow(0 0 50px rgba(108, 92, 231, 0.2)); }
-}
-
-/* ═══════ HERO TEXT CINEMATIC SHIMMER ═══════ */
+/* ═══════ ACETERNITY HERO TEXT GRADIENT ANIMATION ═══════ */
 .hero-content h1 {
     background: linear-gradient(
-        110deg,
+        to right,
         #ffffff 0%,
-        #ffffff 35%,
-        #00d4ff 45%,
-        #6c5ce7 55%,
-        #ffffff 65%,
+        #ffffff 20%,
+        #00d4ff 30%,
+        #6c5ce7 40%,
+        #00d4ff 50%,
+        #ffffff 60%,
         #ffffff 100%
     );
-    background-size: 250% auto;
+    background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: heroShimmer 6s linear infinite;
-    text-shadow: none;
+    animation: textGradient 4s linear infinite;
+}
+@keyframes textGradient {
+    to { background-position: -200% center; }
 }
 
-@keyframes heroShimmer {
-    0% { background-position: 250% center; }
-    100% { background-position: -250% center; }
-}
-
-/* ═══════ HERO BADGE PULSING GLOW ═══════ */
-.hero-badge {
-    animation: badgeGlow 2.5s ease-in-out infinite;
-    position: relative;
-}
-.hero-badge::after {
+/* ═══════ MAGIC UI METEOR SHOWER (background accents) ═══════ */
+.page-container::before {
     content: '';
-    position: absolute;
-    inset: -3px;
-    border-radius: inherit;
-    background: var(--accent-gradient);
-    filter: blur(8px);
-    opacity: 0.4;
-    z-index: -1;
-    animation: badgeGlow 2.5s ease-in-out infinite;
+    position: fixed;
+    width: 2px; height: 80px;
+    background: linear-gradient(to bottom, transparent, #00d4ff, transparent);
+    top: -80px; right: 20%;
+    opacity: 0;
+    animation: meteor 6s ease-in infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+.page-container::after {
+    content: '';
+    position: fixed;
+    width: 1px; height: 60px;
+    background: linear-gradient(to bottom, transparent, #6c5ce7, transparent);
+    top: -60px; right: 40%;
+    opacity: 0;
+    animation: meteor 8s ease-in 3s infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+@keyframes meteor {
+    0% { opacity: 0; transform: translateY(0) rotate(15deg); }
+    5% { opacity: 0.6; }
+    30% { opacity: 0; transform: translateY(100vh) rotate(15deg); }
+    100% { opacity: 0; transform: translateY(100vh) rotate(15deg); }
 }
 
-@keyframes badgeGlow {
-    0%, 100% { box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
-    50% { box-shadow: 0 0 30px rgba(0, 212, 255, 0.6), 0 0 60px rgba(108, 92, 231, 0.3); }
+/* ═══════ SHADCN-STYLE BUTTON HOVER ═══════ */
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-/* ═══════ BUTTON SHINE SWEEP ═══════ */
 .btn-primary::after {
     content: '';
     position: absolute;
-    top: -50%; left: -60%;
-    width: 220%; height: 220%;
-    background: linear-gradient(
-        105deg,
-        transparent 40%,
-        rgba(255, 255, 255, 0.12) 45%,
-        rgba(255, 255, 255, 0.05) 50%,
-        transparent 55%
-    );
-    transform: rotate(25deg) translateX(-120%);
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.05) 50%, transparent 55%);
+    transform: translateX(-120%);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .btn-primary:hover::after {
-    transform: rotate(25deg) translateX(100%);
+    transform: translateX(120%);
+}
+.btn-primary:active {
+    transform: scale(0.97);
 }
 
-/* ═══════ NAV LINK GLOW ═══════ */
+/* ═══════ ACETERNITY GLOWING BORDER NAV ═══════ */
+.nav-links a.active {
+    position: relative;
+}
 .nav-links a.active::after {
     content: '';
     position: absolute;
     inset: 0;
     border-radius: var(--radius-md);
-    background: radial-gradient(ellipse at 30% 50%, rgba(0, 212, 255, 0.08), transparent 70%);
+    background: radial-gradient(ellipse at 20% 50%, rgba(0,212,255,0.1) 0%, transparent 70%);
     pointer-events: none;
+    animation: navGlow 2s ease-in-out infinite alternate;
+}
+@keyframes navGlow {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
 }
 
-/* ═══════ MODAL CINEMATIC ENTRANCE ═══════ */
+/* ═══════ FRAMER MOTION MODAL ═══════ */
 .modal.active {
-    animation: modalBgIn 0.4s ease;
+    animation: modalFadeIn 0.3s ease;
 }
 .modal.active .modal-content {
-    animation: modalSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: modalSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
-@keyframes modalBgIn {
+@keyframes modalFadeIn {
     from { opacity: 0; backdrop-filter: blur(0); }
     to { opacity: 1; backdrop-filter: blur(12px); }
 }
-@keyframes modalSlideUp {
-    from { transform: translateY(60px) scale(0.9); opacity: 0; }
-    to { transform: translateY(0) scale(1); opacity: 1; }
+@keyframes modalSpring {
+    from { transform: scale(0.85) translateY(40px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
-/* ═══════ NOTIFICATION PULSE ═══════ */
-.notif-badge {
-    animation: notifPulse 1.5s ease-in-out infinite;
+/* ═══════ MAGIC UI CARD TILT ON HOVER ═══════ */
+.content-card:hover {
+    transform: translateY(-12px) scale(1.04);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-@keyframes notifPulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
-    50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(255, 68, 68, 0); }
+.content-card:hover .card-poster {
+    box-shadow:
+        0 25px 60px rgba(0,0,0,0.5),
+        0 0 30px rgba(0,212,255,0.12),
+        inset 0 -2px 6px rgba(0,212,255,0.1);
 }
 
-/* ═══════ SEARCH GLOW BREATHE ═══════ */
+/* ═══════ ACETERNITY TOAST ANIMATION ═══════ */
+.toast {
+    animation: toastSpring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(20px);
+}
+@keyframes toastSpring {
+    from { transform: translateX(120%) scale(0.8) rotate(2deg); opacity: 0; }
+    50% { transform: translateX(-5%) scale(1.02) rotate(-0.5deg); }
+    to { transform: translateX(0) scale(1) rotate(0); opacity: 1; }
+}
+
+/* ═══════ EMBLA CAROUSEL STYLE SCROLL ═══════ */
+.content-row {
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+.content-row > * {
+    scroll-snap-align: start;
+}
+
+/* ═══════ SEARCH FOCUS (Shadcn Input style) ═══════ */
 .search-container input:focus {
-    animation: searchBreathe 2s ease-in-out infinite alternate;
+    animation: inputFocus 0.3s ease forwards;
 }
-@keyframes searchBreathe {
-    from { box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.06), 0 0 20px rgba(0, 212, 255, 0.1); }
-    to { box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.12), 0 0 35px rgba(0, 212, 255, 0.2); }
+@keyframes inputFocus {
+    from { box-shadow: 0 0 0 0 rgba(0,212,255,0); }
+    to { box-shadow: 0 0 0 4px rgba(0,212,255,0.1), 0 0 20px rgba(0,212,255,0.15), 0 0 40px rgba(0,212,255,0.05); }
 }
 
-/* ═══════ AVATAR RING ANIMATION ═══════ */
+/* ═══════ NOTIFICATION PULSE (Framer Motion) ═══════ */
+.notif-badge {
+    animation: notifBounce 2s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+@keyframes notifBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); box-shadow: 0 0 0 4px rgba(255,68,68,0.2); }
+}
+
+/* ═══════ AVATAR ROTATING RING (Magic UI) ═══════ */
 .avatar {
     position: relative;
 }
 .avatar::after {
     content: '';
     position: absolute;
-    inset: -3px;
+    inset: -4px;
     border-radius: 50%;
-    background: conic-gradient(from 0deg, #00d4ff, #6c5ce7, #00d4ff);
+    background: conic-gradient(from 0deg, #00d4ff, #6c5ce7, #ff64c8, #00d4ff);
     z-index: -1;
-    animation: avatarSpin 4s linear infinite;
-    opacity: 0.6;
+    animation: avatarSpin 3s linear infinite;
+    opacity: 0.7;
 }
 @keyframes avatarSpin {
     to { transform: rotate(360deg); }
 }
 
-/* ═══════ SECTION FADE IN ═══════ */
-.content-section {
-    animation: sectionReveal 0.8s ease backwards;
-}
-.content-section:nth-child(2) { animation-delay: 0.1s; }
-.content-section:nth-child(3) { animation-delay: 0.2s; }
-.content-section:nth-child(4) { animation-delay: 0.3s; }
-
-@keyframes sectionReveal {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ═══════ STAT COUNTER HOVER ═══════ */
-.stat-item strong {
-    transition: all 0.3s ease;
-}
-.stat-item:hover strong {
-    color: var(--accent-primary);
-    text-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
-    transform: scale(1.1);
-    display: inline-block;
-}
-
-/* ═══════ TOAST ENTRANCE ═══════ */
-.toast {
-    animation: toastSlide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes toastSlide {
-    from { transform: translateX(120%) scale(0.8); opacity: 0; }
-    to { transform: translateX(0) scale(1); opacity: 1; }
-}
-
-/* ═══════ POSTER SHIMMER LOADING ═══════ */
-.card-poster {
+/* ═══════ HERO BADGE (Aceternity Shimmer) ═══════ */
+.hero-badge {
     position: relative;
     overflow: hidden;
 }
+.hero-badge::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: inherit;
+    filter: blur(12px);
+    opacity: 0.6;
+    z-index: -1;
+    animation: badgePulse 2s ease-in-out infinite;
+}
+@keyframes badgePulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+/* ═══════ POSTER SHINE SWEEP (Magic UI) ═══════ */
 .card-poster::after {
     content: '';
     position: absolute;
     inset: 0;
     background: linear-gradient(
-        110deg,
-        transparent 25%,
-        rgba(0, 212, 255, 0.03) 37%,
-        transparent 50%
+        105deg,
+        transparent 30%,
+        rgba(255,255,255,0.04) 45%,
+        rgba(0,212,255,0.03) 50%,
+        transparent 60%
     );
-    background-size: 200% 100%;
+    background-size: 250% 100%;
     opacity: 0;
     transition: opacity 0.3s ease;
+    pointer-events: none;
 }
 .content-card:hover .card-poster::after {
     opacity: 1;
-    animation: posterShine 1.5s ease infinite;
+    animation: posterSweep 1.2s ease;
 }
-@keyframes posterShine {
+@keyframes posterSweep {
     from { background-position: 200% 0; }
-    to { background-position: -200% 0; }
+    to { background-position: -100% 0; }
 }
 
-/* ═══════ FLOATING PARTICLES ═══════ */
-.page-container::before,
-.page-container::after {
-    content: '';
-    position: fixed;
-    border-radius: 50%;
-    pointer-events: none;
-}
-.page-container::before {
-    width: 5px; height: 5px;
-    background: var(--accent-primary);
-    top: 20%; right: 12%;
-    opacity: 0.2;
-    animation: particleDrift 10s ease-in-out infinite;
-}
-.page-container::after {
-    width: 3px; height: 3px;
-    background: var(--accent-tertiary);
-    top: 55%; right: 6%;
-    opacity: 0.15;
-    animation: particleDrift 7s ease-in-out infinite reverse;
-}
-
-@keyframes particleDrift {
-    0%, 100% { transform: translateY(0) translateX(0); }
-    25% { transform: translateY(-25px) translateX(8px); }
-    50% { transform: translateY(-40px) translateX(-5px); }
-    75% { transform: translateY(-20px) translateX(12px); }
-}
-
-/* ═══════ SMOOTH SCROLL ═══════ */
-.content-row { scroll-behavior: smooth; }
-
-/* ═══════ PAGE TRANSITION ═══════ */
-.page.active {
-    animation: pageSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-@keyframes pageSlideIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ═══════ GLASS PANEL SHIMMER ═══════ */
-.admin-panel, .friends-section {
+/* ═══════ GLASS PANEL TOP SHIMMER ═══════ */
+.admin-panel, .friends-section, .quiz-card {
     position: relative;
     overflow: hidden;
 }
@@ -297,11 +321,58 @@
     content: '';
     position: absolute;
     top: 0; left: -100%;
-    width: 50%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.4), transparent);
-    animation: panelShimmer 5s ease-in-out infinite;
+    width: 60%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.5), rgba(108,92,231,0.3), transparent);
+    animation: glassShimmer 6s ease-in-out infinite;
 }
-@keyframes panelShimmer {
-    0%, 100% { left: -50%; }
+@keyframes glassShimmer {
+    0%, 100% { left: -60%; }
     50% { left: 100%; }
+}
+
+/* ═══════ PAGE TRANSITIONS (GSAP-style) ═══════ */
+.page.active {
+    animation: pageEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes pageEnter {
+    from { opacity: 0; transform: translateY(30px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ═══════ COUNTDOWN CARD PULSE ═══════ */
+.countdown-number {
+    animation: countPulse 2s ease-in-out infinite;
+}
+@keyframes countPulse {
+    0%, 100% { text-shadow: 0 0 8px rgba(0,212,255,0.3); }
+    50% { text-shadow: 0 0 20px rgba(0,212,255,0.6), 0 0 40px rgba(0,212,255,0.2); }
+}
+
+/* ═══════ SMOOTH HOVER TRANSITIONS ═══════ */
+.btn, .filter-select, .notification-btn, .theme-toggle, .nav-links a {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ═══════ SPIN WHEEL GLOW ═══════ */
+.random-pick-btn {
+    animation: wheelBtnFloat 3s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+}
+@keyframes wheelBtnFloat {
+    0%, 100% { transform: translateX(-50%) translateY(0); box-shadow: 0 4px 25px rgba(0,212,255,0.3); }
+    50% { transform: translateX(-50%) translateY(-5px); box-shadow: 0 8px 35px rgba(0,212,255,0.5), 0 0 60px rgba(108,92,231,0.2); }
+}
+
+/* ═══════ CHAT TOGGLE BOUNCE ═══════ */
+.chat-toggle {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.chat-toggle:hover {
+    transform: scale(1.15) rotate(-5deg);
+}
+
+/* ═══════ PERFORMANCE: GPU ACCELERATION ═══════ */
+.content-card, .btn-primary, .modal-content, .toast, .nav-links a, .hero-content h1 {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
 }
