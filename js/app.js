@@ -1072,6 +1072,7 @@ class PriismaTv {
         document.getElementById('importData').addEventListener('click', () => document.getElementById('importFile').click());
         document.getElementById('importFile').addEventListener('change', (e) => this.importData(e));
         document.getElementById('resetAllData').addEventListener('click', () => this.resetAllData());
+        document.getElementById('refreshContent').addEventListener('click', () => this.refreshContent());
 
         // Auto-fetch poster when title is typed
         let fetchTimer;
@@ -1288,6 +1289,30 @@ class PriismaTv {
         };
         reader.readAsText(file);
         e.target.value = '';
+    }
+
+    refreshContent() {
+        if (!this.promptOwnerPassword()) return;
+        
+        // Merge new content from SAMPLE_CONTENT without deleting user's existing data
+        let added = 0;
+        SAMPLE_CONTENT.forEach(item => {
+            // Only add if this item doesn't already exist (by id OR title)
+            if (!this.content.find(c => c.id === item.id || c.title === item.title)) {
+                this.content.push(item);
+                added++;
+            }
+        });
+        
+        this.saveContent();
+        this.updateStats();
+        this.navigateTo(this.currentPage);
+        
+        if (added > 0) {
+            this.showToast(`Added ${added} new titles! Your edits are safe.`, 'success');
+        } else {
+            this.showToast('Already up to date — no new content to add.', 'info');
+        }
     }
 
     resetAllData() {
