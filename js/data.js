@@ -1,409 +1,124 @@
-// ═══════════════════════════════════════════════════════════
-// PriismaTv - Data Layer & Content Library
-// ═══════════════════════════════════════════════════════════
-
-const STORAGE_KEYS = {
-    CONTENT: 'priismatv_content',
-    WATCHLIST: 'priismatv_watchlist',
-    FAVORITES: 'priismatv_favorites',
-    FRIENDS: 'priismatv_friends',
-    USER: 'priismatv_user'
-};
+const STORAGE_KEYS = { CONTENT: 'priismatv_content', WATCHLIST: 'priismatv_watchlist', FAVORITES: 'priismatv_favorites', FRIENDS: 'priismatv_friends', USER: 'priismatv_user' };
 
 const SAMPLE_CONTENT = [
-    // ═══════ MOVIES ═══════
-    {
-        id: 'mov_1', title: 'Interstellar', type: 'movie', year: 2014, rating: 8.7, genre: 'sci-fi',
-        description: 'A team of explorers travel through a wormhole in space to ensure humanity\'s survival.',
-        poster: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/xJHokMbljvjADYdit5fK1DVZp2A.jpg',
-        trailer: 'zSWdZVtXT7E', duration: '2h 49m',
-        tags: ['trending', 'top-rated', 'must-watch'], dateAdded: '2024-01-15'
-    },
-    {
-        id: 'mov_2', title: 'The Dark Knight', type: 'movie', year: 2008, rating: 9.0, genre: 'action',
-        description: 'Batman faces the Joker, a criminal mastermind who plunges Gotham into anarchy.',
-        poster: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911BTUOzMKh6GGE.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/nMKdUUepR0i5zn0y1T4CsSB5ez.jpg',
-        trailer: 'EXeTwQWrcwY', duration: '2h 32m',
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-10'
-    },
-    {
-        id: 'mov_3', title: 'Inception', type: 'movie', year: 2010, rating: 8.8, genre: 'sci-fi',
-        description: 'A thief who enters people\'s dreams is given the task of planting an idea in a CEO\'s mind.',
-        poster: 'https://image.tmdb.org/t/p/w500/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg',
-        trailer: 'YoHD9XEInc0', duration: '2h 28m',
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-20'
-    },
-    {
-        id: 'mov_4', title: 'Dune: Part Two', type: 'movie', year: 2024, rating: 8.6, genre: 'sci-fi',
-        description: 'Paul Atreides unites with the Fremen on a warpath of revenge against House Harkonnen.',
-        poster: 'https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg',
-        trailer: 'Way9Dexny3w', duration: '2h 46m',
-        tags: ['trending', 'must-watch'], dateAdded: '2024-03-01'
-    },
 
-    // ═══════ HARRY POTTER SERIES ═══════
-    {
-        id: 'hp_1', title: 'Harry Potter and the Philosopher\'s Stone', type: 'movie', year: 2001, rating: 7.6, genre: 'fantasy',
-        description: 'An orphaned boy discovers he is a wizard and enrolls at Hogwarts School of Witchcraft and Wizardry.',
-        poster: 'https://image.tmdb.org/t/p/w500/wuMc08IPKEatf9rnMNXvIDxqP4W.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/hziiv14OpD73u9gAak4XDDfBKa2.jpg',
-        trailer: 'VyHV0BRtdxo', duration: '2h 32m',
-        tags: ['must-watch'], dateAdded: '2024-01-01'
-    },
-    {
-        id: 'hp_2', title: 'Harry Potter and the Chamber of Secrets', type: 'movie', year: 2002, rating: 7.4, genre: 'fantasy',
-        description: 'Harry returns to Hogwarts where a mysterious force is petrifying students one by one.',
-        poster: 'https://image.tmdb.org/t/p/w500/sdEOH0992YZ0QSxgXNIGLq1ToUi.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/1stUIsjawROZxjiCMtqqXqgE0F5.jpg',
-        trailer: 'jBltxS8HfQ4', duration: '2h 41m',
-        tags: [], dateAdded: '2024-01-01'
-    },
-    {
-        id: 'hp_3', title: 'Harry Potter and the Prisoner of Azkaban', type: 'movie', year: 2004, rating: 7.9, genre: 'fantasy',
-        description: 'Harry learns that a dangerous prisoner has escaped Azkaban and is believed to be after him.',
-        poster: 'https://image.tmdb.org/t/p/w500/796Inh2Y9JOk1UPNjspbqM0HyrE.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/vbk5CfaAHOjQPSAcYm6AoRYz2Af.jpg',
-        trailer: 'lAxgztbYDbs', duration: '2h 22m',
-        tags: ['top-rated'], dateAdded: '2024-01-01'
-    },
-    {
-        id: 'hp_4', title: 'Harry Potter and the Goblet of Fire', type: 'movie', year: 2005, rating: 7.7, genre: 'fantasy',
-        description: 'Harry is mysteriously selected as a competitor in a dangerous wizarding tournament.',
-        poster: 'https://image.tmdb.org/t/p/w500/fECBtHlr0RB3foNhAGR3TKI2TCD.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/8f9dnOtOm4KiU1CcEj8JhmJrrmu.jpg',
-        trailer: '3EGojp4Hh5A', duration: '2h 37m',
-        tags: ['must-watch'], dateAdded: '2024-01-01'
-    },
-    {
-        id: 'hp_5', title: 'Harry Potter and the Order of the Phoenix', type: 'movie', year: 2007, rating: 7.5, genre: 'fantasy',
-        description: 'Harry forms Dumbledore\'s Army to fight against the Ministry and the return of Voldemort.',
-        poster: 'https://image.tmdb.org/t/p/w500/s836PRwHkLjrOJrfW0NOq4hHyZB.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/urDWNffjwmNi5IQaezw9GwqCUMI.jpg',
-        trailer: 'y6ZW7KXaUGE', duration: '2h 18m',
-        tags: [], dateAdded: '2024-01-01'
-    },
-    {
-        id: 'hp_6', title: 'Harry Potter and the Half-Blood Prince', type: 'movie', year: 2009, rating: 7.6, genre: 'fantasy',
-        description: 'Dumbledore and Harry uncover the secret to destroying Voldemort using memories of Tom Riddle.',
-        poster: 'https://image.tmdb.org/t/p/w500/z7uo3vwIwV5rQp1lsZs1bk2Ek36.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/urDWNffjwmNi5IQaezw9GwqCUMI.jpg',
-        trailer: 'jcJHQJE_hNE', duration: '2h 33m',
-        tags: [], dateAdded: '2024-01-01'
-    },
-    {
-        id: 'hp_7', title: 'Harry Potter and the Deathly Hallows: Part 1', type: 'movie', year: 2010, rating: 7.7, genre: 'fantasy',
-        description: 'Harry, Ron, and Hermione set out to find and destroy Voldemort\'s Horcruxes.',
-        poster: 'https://image.tmdb.org/t/p/w500/maP4MTfPCeVD2FZHKhMIA0Oj60k.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/8YpMqfcnTTkMJaxkSqkPgLSKIjn.jpg',
-        trailer: 'MxqsmMBMBzU', duration: '2h 26m',
-        tags: [], dateAdded: '2024-01-01'
-    },
-    {
-        id: 'hp_8', title: 'Harry Potter and the Deathly Hallows: Part 2', type: 'movie', year: 2011, rating: 8.1, genre: 'fantasy',
-        description: 'The final battle between Harry and Voldemort. Everything ends here.',
-        poster: 'https://image.tmdb.org/t/p/w500/c54HpQmuwXjHq2C9wmoACjxoomR.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/dVr11o9or7AS8AMPfwjSpEU83iU.jpg',
-        trailer: '5NYt1qirBWg', duration: '2h 10m',
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-01'
-    },
+{id:'m01',title:'Interstellar',type:'movie',year:2014,rating:8.7,genre:'sci-fi',description:'A team of explorers travel through a wormhole in space in an attempt to ensure humanity\'s survival.',poster:'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',backdrop:'https://image.tmdb.org/t/p/original/xJHokMbljvjADYdit5fK1DVZp2A.jpg',trailer:'zSWdZVtXT7E',duration:'2h 49m',tags:['trending','must-watch','top-rated'],dateAdded:'2024-01-15'},
+{id:'m02',title:'The Dark Knight',type:'movie',year:2008,rating:9.0,genre:'action',description:'When the menace known as the Joker wreaks havoc on Gotham, Batman must face one of the greatest tests.',poster:'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911BTUOrmUDl9Ur.jpg',backdrop:'https://image.tmdb.org/t/p/original/nMKdUUepR0i5zn0y1T4CsSB5ez.jpg',trailer:'EXeTwQWrcwY',duration:'2h 32m',tags:['must-watch','top-rated'],dateAdded:'2024-01-15'},
+{id:'m03',title:'Inception',type:'movie',year:2010,rating:8.8,genre:'sci-fi',description:'A thief who steals corporate secrets through dream-sharing technology is given the task of planting an idea.',poster:'https://image.tmdb.org/t/p/w500/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg',backdrop:'https://image.tmdb.org/t/p/original/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg',trailer:'YoHD9XEInc0',duration:'2h 28m',tags:['trending','must-watch','top-rated'],dateAdded:'2024-01-16'},
+{id:'m04',title:'Dune Part Two',type:'movie',year:2024,rating:8.6,genre:'sci-fi',description:'Paul Atreides unites with the Fremen to seek revenge against those who destroyed his family.',poster:'https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nez7.jpg',backdrop:'https://image.tmdb.org/t/p/original/xOMo8BRK7PfcJv9JCnx7s5hj0PX.jpg',trailer:'Way9Dexny3w',duration:'2h 46m',tags:['trending','must-watch'],dateAdded:'2024-03-01'},
+{id:'m05',title:'The Matrix',type:'movie',year:1999,rating:8.7,genre:'sci-fi',description:'A computer hacker learns about the true nature of his reality and his role in the war against its controllers.',poster:'https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg',backdrop:'https://image.tmdb.org/t/p/original/fNG7i7RqMErkcqhohV2a6cV1Ehy.jpg',trailer:'vKQi3bBA1y8',duration:'2h 16m',tags:['must-watch','top-rated'],dateAdded:'2024-01-17'},
 
-    // ═══════ LORD OF THE RINGS & HOBBIT ═══════
-    {
-        id: 'lotr_1', title: 'The Lord of the Rings: The Fellowship of the Ring', type: 'movie', year: 2001, rating: 8.8, genre: 'fantasy',
-        description: 'A young hobbit must destroy a powerful ring to save Middle-earth from the Dark Lord Sauron.',
-        poster: 'https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/x2RS3uTcsJJ9IfjNPcgDmukoEcQ.jpg',
-        trailer: 'V75dMMIW2B4', duration: '3h 48m',
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-02'
-    },
-    {
-        id: 'lotr_2', title: 'The Lord of the Rings: The Two Towers', type: 'movie', year: 2002, rating: 8.8, genre: 'fantasy',
-        description: 'The fellowship is broken. Frodo and Sam continue alone while war rages across Middle-earth.',
-        poster: 'https://image.tmdb.org/t/p/w500/5VTN0pR8gcqV3EPUHHfMGnJYN9L.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg',
-        trailer: 'LbfMDwc4azU', duration: '3h 55m',
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-02'
-    },
-    {
-        id: 'lotr_3', title: 'The Lord of the Rings: The Return of the King', type: 'movie', year: 2003, rating: 9.0, genre: 'fantasy',
-        description: 'The final battle for Middle-earth begins as Frodo reaches Mount Doom to destroy the One Ring.',
-        poster: 'https://image.tmdb.org/t/p/w500/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/lXhgCODAbBXL5buk9yEmTpOoOgR.jpg',
-        trailer: 'r5X-hFf6Bwo', duration: '4h 11m',
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-02'
-    },
-    {
-        id: 'hob_1', title: 'The Hobbit: An Unexpected Journey', type: 'movie', year: 2012, rating: 7.8, genre: 'fantasy',
-        description: 'Bilbo Baggins is swept into an epic quest to reclaim the lost Dwarf Kingdom of Erebor.',
-        poster: 'https://image.tmdb.org/t/p/w500/yHA9Fc37VmpUA5UncTxxo3rTGVA.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/xHYkJw9aQPMUNynFMgm0kBnYLQk.jpg',
-        trailer: 'SDnYMbYB-nU', duration: '2h 49m',
-        tags: ['must-watch'], dateAdded: '2024-01-02'
-    },
-    {
-        id: 'hob_2', title: 'The Hobbit: The Desolation of Smaug', type: 'movie', year: 2013, rating: 7.8, genre: 'fantasy',
-        description: 'The dwarves continue their journey to the Lonely Mountain, encountering the dragon Smaug.',
-        poster: 'https://image.tmdb.org/t/p/w500/gl3cOYUCE6cWSmViOrgbAGiMWaT.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/oQKb6MFxxrW04GO6P27xxCM9bKB.jpg',
-        trailer: 'JDG2m5hN1vo', duration: '2h 41m',
-        tags: [], dateAdded: '2024-01-02'
-    },
-    {
-        id: 'hob_3', title: 'The Hobbit: The Battle of the Five Armies', type: 'movie', year: 2014, rating: 7.4, genre: 'fantasy',
-        description: 'Bilbo and the Dwarves face the consequences of awakening Smaug as five armies clash.',
-        poster: 'https://image.tmdb.org/t/p/w500/xT98tLqatZPQApyRmlPL12LtiWp.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/svWFGCGbENYjaNJlYiPnHbfaZkL.jpg',
-        trailer: 'iVAgTiBrrDA', duration: '2h 24m',
-        tags: [], dateAdded: '2024-01-02'
-    },
+{id:'m06',title:'Gladiator',type:'movie',year:2000,rating:8.5,genre:'action',description:'A former Roman General sets out to exact vengeance against the corrupt emperor who murdered his family.',poster:'https://image.tmdb.org/t/p/w500/ty8TGRuvJLPUmAR1H1nRIsgCLin.jpg',backdrop:'https://image.tmdb.org/t/p/original/gEoaoCBaW47tIioXwMRs9TmzWWn.jpg',trailer:'owK1qxDselE',duration:'2h 35m',tags:['must-watch','top-rated'],dateAdded:'2024-01-18'},
+{id:'m07',title:'Avengers Endgame',type:'movie',year:2019,rating:8.4,genre:'action',description:'After the devastating events of Infinity War, the Avengers assemble once more to undo Thanos\' actions.',poster:'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9SlMiEFnQ.jpg',backdrop:'https://image.tmdb.org/t/p/original/7RyHsO4yDXtBv1zUU3mTpHeQ0d5.jpg',trailer:'TcMBFSGVi1c',duration:'3h 1m',tags:['trending','must-watch'],dateAdded:'2024-01-19'},
+{id:'m08',title:'Spider-Man No Way Home',type:'movie',year:2021,rating:8.2,genre:'action',description:'Peter Parker\'s identity is revealed, leading him to seek help from Doctor Strange with multiverse consequences.',poster:'https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg',backdrop:'https://image.tmdb.org/t/p/original/14QbnygCuTO0vl7CAFmPf1fgZfV.jpg',trailer:'JfVOs4VSd8A',duration:'2h 28m',tags:['trending','must-watch'],dateAdded:'2024-01-20'},
+{id:'m09',title:'Oppenheimer',type:'movie',year:2023,rating:8.5,genre:'drama',description:'The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.',poster:'https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',backdrop:'https://image.tmdb.org/t/p/original/rLb2cwF3Pazuxe0Yk6f5QXmhsDK.jpg',trailer:'uYPbbksJxIg',duration:'3h 0m',tags:['trending','must-watch','top-rated'],dateAdded:'2024-01-21'},
+{id:'m10',title:'John Wick 4',type:'movie',year:2023,rating:7.7,genre:'action',description:'John Wick uncovers a path to defeating the High Table, but must face a new enemy with powerful alliances.',poster:'https://image.tmdb.org/t/p/w500/vZloFAK7NmvMGKE7LsyJRMOWgRE.jpg',backdrop:'https://image.tmdb.org/t/p/original/7I6VUdPj6tQECNHdviJkUHD2u89.jpg',trailer:'qEVUtrk8_B4',duration:'2h 49m',tags:['trending','must-watch'],dateAdded:'2024-01-22'},
 
-    // ═══════ HUNGER GAMES ═══════
-    {
-        id: 'hg_1', title: 'The Hunger Games', type: 'movie', year: 2012, rating: 7.2, genre: 'action',
-        description: 'Katniss Everdeen volunteers to take her sister\'s place in a televised death match.',
-        poster: 'https://image.tmdb.org/t/p/w500/iPayaD5neYCRhicmHq3TXtG6FMV.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/pOlH8e2jHWOFgZBjqJPmvxkSEsE.jpg',
-        trailer: 'mfBbSwAVWpA', duration: '2h 22m',
-        tags: ['must-watch'], dateAdded: '2024-01-03'
-    },
-    {
-        id: 'hg_2', title: 'The Hunger Games: Catching Fire', type: 'movie', year: 2013, rating: 7.5, genre: 'action',
-        description: 'Katniss becomes a symbol of rebellion and is forced back into the arena.',
-        poster: 'https://image.tmdb.org/t/p/w500/4ZMvjenmmAdxtIBqE9IK4mxKBMo.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/mUhOmGIpPJfsBVCfCl5NpPcvHxM.jpg',
-        trailer: 'EAzGXqOhKMg', duration: '2h 26m',
-        tags: ['top-rated'], dateAdded: '2024-01-03'
-    },
-    {
-        id: 'hg_3', title: 'The Hunger Games: Mockingjay - Part 1', type: 'movie', year: 2014, rating: 6.7, genre: 'action',
-        description: 'Katniss becomes the Mockingjay, the symbol of rebellion against the Capitol.',
-        poster: 'https://image.tmdb.org/t/p/w500/4FAA18ZIja70d1Tu5hr5cj2q1sB.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/4RgyC1bETc4vOYOcefhjLsMDcNT.jpg',
-        trailer: '3PkkHsuMrho', duration: '2h 3m',
-        tags: [], dateAdded: '2024-01-03'
-    },
-    {
-        id: 'hg_4', title: 'The Hunger Games: Mockingjay - Part 2', type: 'movie', year: 2015, rating: 6.6, genre: 'action',
-        description: 'Katniss and her squad go on a mission to assassinate President Snow.',
-        poster: 'https://image.tmdb.org/t/p/w500/qGcEUHBRGHxclMmBYNwMznkYCHn.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/qAk4Bx2S6C0h5xQGLTVjMAvNjnW.jpg',
-        trailer: 'n-7K_OjsDCQ', duration: '2h 17m',
-        tags: [], dateAdded: '2024-01-03'
-    },
+{id:'m11',title:'Spider-Man Across the Spider-Verse',type:'movie',year:2023,rating:8.7,genre:'animation',description:'Miles Morales catapults across the multiverse, where he encounters a team of Spider-People.',poster:'https://image.tmdb.org/t/p/w500/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg',backdrop:'https://image.tmdb.org/t/p/original/4HodYYKEIsGOdinkGi2Ucz6X9i0.jpg',trailer:'cqGjhVJWtEg',duration:'2h 20m',tags:['trending','must-watch','top-rated'],dateAdded:'2024-01-23'},
+{id:'m12',title:'Everything Everywhere All at Once',type:'movie',year:2022,rating:8.0,genre:'sci-fi',description:'A middle-aged Chinese immigrant is swept up into an insane adventure where she alone can save existence.',poster:'https://image.tmdb.org/t/p/w500/w3LxiVYdWWRvEVdn5RYq6jIqkb1.jpg',backdrop:'https://image.tmdb.org/t/p/original/fOy2Jurz9k6RnJnMUMRDAgBwru2.jpg',trailer:'wxN1T1uxQ2g',duration:'2h 19m',tags:['must-watch','top-rated'],dateAdded:'2024-01-24'},
+{id:'m13',title:'Deadpool & Wolverine',type:'movie',year:2024,rating:8.0,genre:'action',description:'Deadpool joins forces with Wolverine for an epic multiversal adventure to save their worlds.',poster:'https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg',backdrop:'https://image.tmdb.org/t/p/original/yDHYTfA3R0jFYba16jBB1ef8oIt.jpg',trailer:'73_1biulkYk',duration:'2h 8m',tags:['trending','must-watch'],dateAdded:'2024-07-26'},
+{id:'m14',title:'The Shawshank Redemption',type:'movie',year:1994,rating:9.3,genre:'drama',description:'Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.',poster:'https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg',backdrop:'https://image.tmdb.org/t/p/original/kXfqcdQKsToO0OUXHcrrNCHDBzO.jpg',trailer:'6hB3S9bIaco',duration:'2h 22m',tags:['must-watch','top-rated'],dateAdded:'2024-01-25'},
+{id:'m15',title:'Fight Club',type:'movie',year:1999,rating:8.8,genre:'thriller',description:'An insomniac office worker and a devil-may-care soap maker form an underground fight club.',poster:'https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg',backdrop:'https://image.tmdb.org/t/p/original/hZkgoQYus5dXo3H8T7Uef6DNknx.jpg',trailer:'qtRKdVHc-cE',duration:'2h 19m',tags:['must-watch','top-rated'],dateAdded:'2024-01-26'},
 
-    // ═══════ TV SHOWS ═══════
-    {
-        id: 'tv_got', title: 'Game of Thrones', type: 'tvshow', year: 2011, rating: 9.3, genre: 'fantasy',
-        description: 'Nine noble families fight for control of the lands of Westeros while an ancient enemy threatens them all.',
-        poster: 'https://image.tmdb.org/t/p/w500/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/suopoADq0k8YZr4dQXcU6pToj6s.jpg',
-        trailer: 'KPLWWIOCOOQ', episodes: 73, seasons: 8,
-        tags: ['top-rated', 'must-watch', 'trending'], dateAdded: '2024-01-04'
-    },
-    {
-        id: 'tv_witcher', title: 'The Witcher', type: 'tvshow', year: 2019, rating: 8.2, genre: 'fantasy',
-        description: 'Geralt of Rivia, a mutated monster-hunter, struggles to find his place in a world full of evil.',
-        poster: 'https://image.tmdb.org/t/p/w500/7vjaCdMw15FEbXyLQTVJ04UcwaJ.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/jBJWaqoSCiARWtfV0GlqHrcdiJq.jpg',
-        trailer: 'ndl1W4ltcmg', episodes: 24, seasons: 3,
-        tags: ['trending', 'must-watch'], dateAdded: '2024-01-04'
-    },
-    {
-        id: 'tv_bb', title: 'Breaking Bad', type: 'tvshow', year: 2008, rating: 9.5, genre: 'drama',
-        description: 'A chemistry teacher turns to manufacturing meth to secure his family\'s future.',
-        poster: 'https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/tsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg',
-        trailer: 'HhesaQXLuRY', episodes: 62, seasons: 5,
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-08'
-    },
-    {
-        id: 'tv_st', title: 'Stranger Things', type: 'tvshow', year: 2016, rating: 8.7, genre: 'sci-fi',
-        description: 'When a boy disappears, his friends must confront terrifying supernatural forces.',
-        poster: 'https://image.tmdb.org/t/p/w500/49WJfeN0moxb9IPfGn8AIqMGskD.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/56v2KjBlYz0JslLCyzXN3f7UxKl.jpg',
-        trailer: 'b9EkMc79ZSU', episodes: 34, seasons: 4,
-        tags: ['trending', 'must-watch'], dateAdded: '2024-02-20'
-    },
-    {
-        id: 'tv_tlou', title: 'The Last of Us', type: 'tvshow', year: 2023, rating: 8.8, genre: 'drama',
-        description: 'Joel and Ellie survive in a post-apocalyptic world ravaged by a deadly fungal infection.',
-        poster: 'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/uDgy6hyPd82kOHh6I95FLtLnj6p.jpg',
-        trailer: 'uLtkt8BonwM', episodes: 16, seasons: 2,
-        tags: ['trending', 'top-rated', 'must-watch'], dateAdded: '2024-03-10'
-    },
-    {
-        id: 'tv_arcane', title: 'Arcane', type: 'tvshow', year: 2021, rating: 9.0, genre: 'action',
-        description: 'Set in Piltover and Zaun, follows the origins of two League of Legends champions.',
-        poster: 'https://image.tmdb.org/t/p/w500/fqldf2t8ztc9aiwn3k6mlX3tvRT.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/rkB4LyZHo1NHXFEDHl9vSD9r1lI.jpg',
-        trailer: 'fXmAurh012s', episodes: 18, seasons: 2,
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-02-28'
-    },
+{id:'m16',title:'Pulp Fiction',type:'movie',year:1994,rating:8.9,genre:'crime',description:'The lives of two mob hitmen, a boxer, a gangster and his wife intertwine in four tales of violence and redemption.',poster:'https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg',backdrop:'https://image.tmdb.org/t/p/original/suaEOtk1N1sgg2MTM7oZd2cfVp3.jpg',trailer:'s7EdQ4FqbhY',duration:'2h 34m',tags:['must-watch','top-rated'],dateAdded:'2024-01-27'},
+{id:'m17',title:'Parasite',type:'movie',year:2019,rating:8.5,genre:'thriller',description:'Greed and class discrimination threaten the newly formed symbiotic relationship between the wealthy Park family and the destitute Kim clan.',poster:'https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg',backdrop:'https://image.tmdb.org/t/p/original/TU9NIjwzjoKPwQHoHshkFcQUCG.jpg',trailer:'5xH0HfJHsaY',duration:'2h 12m',tags:['must-watch','top-rated'],dateAdded:'2024-01-28'},
+{id:'m18',title:'Mad Max Fury Road',type:'movie',year:2015,rating:8.1,genre:'action',description:'In a post-apocalyptic wasteland, Max teams up with Furiosa to flee from a tyrannical warlord.',poster:'https://image.tmdb.org/t/p/w500/8tZYtuWezp8JbcsvHYO0O46tFBO.jpg',backdrop:'https://image.tmdb.org/t/p/original/phszHPFVhPHhMZgo0fWTKBDQsJA.jpg',trailer:'hEJnMQG9ev8',duration:'2h 0m',tags:['must-watch','top-rated'],dateAdded:'2024-01-29'},
+{id:'m19',title:'The Batman',type:'movie',year:2022,rating:7.8,genre:'action',description:'Batman ventures into Gotham City\'s underworld when a sadistic killer leaves behind a trail of cryptic clues.',poster:'https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg',backdrop:'https://image.tmdb.org/t/p/original/b0PlSFdDwbyFAJlME0Cp4ixz2YR.jpg',trailer:'mqqft2x_Aa4',duration:'2h 56m',tags:['trending','must-watch'],dateAdded:'2024-02-01'},
+{id:'m20',title:'Top Gun Maverick',type:'movie',year:2022,rating:8.3,genre:'action',description:'After thirty years of service, Pete Mitchell is where he belongs, pushing the envelope as a courageous test pilot.',poster:'https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg',backdrop:'https://image.tmdb.org/t/p/original/AaV1YIdWKRRIJgHceS5O8H9mTkz.jpg',trailer:'qSqVVswa420',duration:'2h 11m',tags:['trending','must-watch'],dateAdded:'2024-02-02'},
 
+{id:'m21',title:'Guardians of the Galaxy Vol 3',type:'movie',year:2023,rating:8.0,genre:'action',description:'Still reeling from the loss of Gamora, Peter Quill must rally his team to defend the universe.',poster:'https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg',backdrop:'https://image.tmdb.org/t/p/original/5YZbUmjbMa3ClvSW1Wj3D6XGolb.jpg',trailer:'u3V5KDHRQvk',duration:'2h 30m',tags:['trending','must-watch'],dateAdded:'2024-02-03'},
+{id:'m22',title:'The Lord of the Rings: The Fellowship of the Ring',type:'movie',year:2001,rating:8.8,genre:'fantasy',description:'A young hobbit must destroy a powerful ring to save Middle-earth from the Dark Lord Sauron.',poster:'https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cHo6.jpg',backdrop:'https://image.tmdb.org/t/p/original/pIUvQ9Ed35wlWhY2oU6OmwEgzz8.jpg',trailer:'V75dMMIW2B4',duration:'3h 48m',tags:['must-watch','top-rated'],dateAdded:'2024-02-04'},
+{id:'m23',title:'The Lord of the Rings: The Two Towers',type:'movie',year:2002,rating:8.8,genre:'fantasy',description:'The fellowship is divided and must face new challenges as Sauron\'s forces grow stronger.',poster:'https://image.tmdb.org/t/p/w500/5VTN0pR8gcqV3EPUHHfMGnJYN9L.jpg',backdrop:'https://image.tmdb.org/t/p/original/5hNcsnMkwU2LknLoru73c76el3z.jpg',trailer:'LbfMDwc4azU',duration:'3h 55m',tags:['must-watch','top-rated'],dateAdded:'2024-02-05'},
+{id:'m24',title:'The Lord of the Rings: The Return of the King',type:'movie',year:2003,rating:9.0,genre:'fantasy',description:'Gandalf and Aragorn lead the World of Men against Sauron\'s army to draw his gaze from Frodo and Sam.',poster:'https://image.tmdb.org/t/p/w500/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg',backdrop:'https://image.tmdb.org/t/p/original/lXhgCODAbBXL5buk9yEmTpOoOgR.jpg',trailer:'r5X-hFf6Bwo',duration:'4h 11m',tags:['must-watch','top-rated'],dateAdded:'2024-02-06'},
+{id:'m25',title:'The Hobbit: An Unexpected Journey',type:'movie',year:2012,rating:7.8,genre:'fantasy',description:'Bilbo Baggins is swept into an epic quest to reclaim the lost Dwarf Kingdom of Erebor.',poster:'https://image.tmdb.org/t/p/w500/yHA9Fc37VmpUA5UncTxxo3rTGVA.jpg',backdrop:'https://image.tmdb.org/t/p/original/xKb9aNguOKouIcv8rp5Nh7B2Gsl.jpg',trailer:'SDnYMbYB-nU',duration:'2h 49m',tags:['must-watch'],dateAdded:'2024-02-07'},
 
-    // ═══════ ANIME FAVORITES ═══════
-    {
-        id: 'ani_sl', title: 'Solo Leveling', type: 'anime', year: 2024, rating: 8.8, genre: 'action',
-        description: 'In a world where hunters fight monsters from gates, the weakest hunter Sung Jinwoo gains the power to level up infinitely.',
-        poster: 'https://image.tmdb.org/t/p/w500/geCRueV3ElhRTr0xtJuEWJt6dJ1.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/geCRueV3ElhRTr0xtJuEWJt6dJ1.jpg',
-        trailer: 'Yul3Yteaj9M', episodes: 24, seasons: 2,
-        tags: ['trending', 'must-watch', 'top-rated'], dateAdded: '2024-03-20'
-    },
-    {
-        id: 'ani_nar1', title: 'Naruto', type: 'anime', year: 2002, rating: 8.3, genre: 'action',
-        description: 'A young ninja who seeks recognition from his peers and dreams of becoming the Hokage.',
-        poster: 'https://image.tmdb.org/t/p/w500/xppeysfvDKVx775MFuH8Z9BlpMk.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/qlIJKMTKrrh3DOHCVsu25LIzLfV.jpg',
-        trailer: 'QczGoCmX-pI', episodes: 220, seasons: 5,
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-01'
-    },
-    {
-        id: 'ani_nar2', title: 'Naruto Shippuden', type: 'anime', year: 2007, rating: 8.7, genre: 'action',
-        description: 'Naruto returns after training and faces the Akatsuki organization threatening the ninja world.',
-        poster: 'https://image.tmdb.org/t/p/w500/zAYRe2bJxpWTVrwwmBc00VFkAf4.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/dIkQbQNJOP6hn0mXLxO4JjFjR5z.jpg',
-        trailer: '1dy2zLVyYmk', episodes: 500, seasons: 21,
-        tags: ['top-rated', 'must-watch', 'trending'], dateAdded: '2024-01-01'
-    },
-    {
-        id: 'ani_boruto', title: 'Boruto: Naruto Next Generations', type: 'anime', year: 2017, rating: 6.8, genre: 'action',
-        description: 'The son of Naruto follows his own ninja path while uncovering threats to the shinobi world.',
-        poster: 'https://image.tmdb.org/t/p/w500/bIRuMg6aG8YhLJdN39KZ9lQz4UY.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/sM33SAI2FWaJTsD0mgan59OCZOB.jpg',
-        trailer: '4iHOE2YoHWE', episodes: 293, seasons: 1,
-        tags: ['trending'], dateAdded: '2024-02-01'
-    },
-    {
-        id: 'ani_eis', title: 'The Eminence in Shadow', type: 'anime', year: 2022, rating: 8.3, genre: 'action',
-        description: 'A boy who always wanted to be a mastermind in the shadows gets reincarnated into a fantasy world where his delusions become reality.',
-        poster: 'https://image.tmdb.org/t/p/w500/b3RUt0lRFjqXPRG5ILKzqhusaMS.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/b3RUt0lRFjqXPRG5ILKzqhusaMS.jpg',
-        trailer: 'wG5AoEiXiVc', episodes: 32, seasons: 2,
-        tags: ['trending', 'must-watch'], dateAdded: '2024-03-12'
-    },
-    {
-        id: 'ani_agk', title: 'Akame ga Kill!', type: 'anime', year: 2014, rating: 7.8, genre: 'action',
-        description: 'Tatsumi joins the assassin group Night Raid to fight against a corrupt Empire and bring justice.',
-        poster: 'https://image.tmdb.org/t/p/w500/byPEPD04MNhejMQDLhMEbXBVaOt.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/byPEPD04MNhejMQDLhMEbXBVaOt.jpg',
-        trailer: 'NIeKMKwON0U', episodes: 24, seasons: 1,
-        tags: ['must-watch'], dateAdded: '2024-02-08'
-    },
-    {
-        id: 'ani_ditf', title: 'Darling in the Franxx', type: 'anime', year: 2018, rating: 7.5, genre: 'mecha',
-        description: 'In a dystopian future, children pilot giant mechs called Franxx. Zero Two, a mysterious girl with horns, changes everything for Hiro.',
-        poster: 'https://image.tmdb.org/t/p/w500/sJV97lUi2qB6xDgkDo3JVDXmyVT.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/sJV97lUi2qB6xDgkDo3JVDXmyVT.jpg',
-        trailer: 'JGdcNritDvM', episodes: 24, seasons: 1,
-        tags: ['trending', 'must-watch'], dateAdded: '2024-02-15'
-    },
-    {
-        id: 'ani_fsn', title: 'Fate/stay night: Unlimited Blade Works', type: 'anime', year: 2014, rating: 8.1, genre: 'action',
-        description: 'The Holy Grail War begins as Masters and Servants battle for the wish-granting artifact.',
-        poster: 'https://image.tmdb.org/t/p/w500/ij0xoc1pFwNsY2dAIi8v0MtB2dj.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/ij0xoc1pFwNsY2dAIi8v0MtB2dj.jpg',
-        trailer: 'gDFWHD9cm-E', episodes: 25, seasons: 2,
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-18'
-    },
-    {
-        id: 'ani_fz', title: 'Fate/Zero', type: 'anime', year: 2011, rating: 8.3, genre: 'action',
-        description: 'The prequel to Fate/stay night. Seven mages summon heroic spirits for a battle royale for the Holy Grail.',
-        poster: 'https://image.tmdb.org/t/p/w500/yJME98H6bGEJT0nApMRN2P7gsM6.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/yJME98H6bGEJT0nApMRN2P7gsM6.jpg',
-        trailer: 'Kwrg4VsH1IM', episodes: 25, seasons: 2,
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-18'
-    },
-    {
-        id: 'ani_fgob', title: 'Fate/Grand Order: Babylonia', type: 'anime', year: 2019, rating: 7.9, genre: 'action',
-        description: 'Ritsuka and Mash travel to ancient Mesopotamia to stop the destruction of humanity.',
-        poster: 'https://image.tmdb.org/t/p/w500/pLbBiJNR98l75MNwCSJCBgOfSK4.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/pLbBiJNR98l75MNwCSJCBgOfSK4.jpg',
-        trailer: 'rHowT66ENbI', episodes: 21, seasons: 1,
-        tags: ['trending'], dateAdded: '2024-02-20'
-    },
-    {
-        id: 'ani_aot', title: 'Attack on Titan', type: 'anime', year: 2013, rating: 9.0, genre: 'action',
-        description: 'Humanity lives behind walls to protect against man-eating Titans. Eren vows to destroy them all.',
-        poster: 'https://image.tmdb.org/t/p/w500/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/rqbCbjB19amtOtFQbb3K2lgm2zv.jpg',
-        trailer: 'MGRm4IzK1SQ', episodes: 87, seasons: 4,
-        tags: ['trending', 'top-rated', 'must-watch'], dateAdded: '2024-01-05'
-    },
-    {
-        id: 'ani_ds', title: 'Demon Slayer', type: 'anime', year: 2019, rating: 8.7, genre: 'action',
-        description: 'Tanjiro becomes a demon slayer to avenge his family and cure his sister Nezuko.',
-        poster: 'https://image.tmdb.org/t/p/w500/wrCVHdkBlBWdQ6HGbhagQ0UHZlK.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/5DUMPBMjPKQj3wQzakupgBEYcSR.jpg',
-        trailer: 'VQGCKyvRw3A', episodes: 55, seasons: 4,
-        tags: ['trending', 'must-watch'], dateAdded: '2024-02-10'
-    },
-    {
-        id: 'ani_jjk', title: 'Jujutsu Kaisen', type: 'anime', year: 2020, rating: 8.6, genre: 'action',
-        description: 'A boy swallows a cursed finger and becomes host to the King of Curses. Enrolls in sorcerer school.',
-        poster: 'https://image.tmdb.org/t/p/w500/hFWP5HkbVEe40hrXgtCeQxoccHE.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/9CxWh0jMWctDPmBHtnOEIsCDWn.jpg',
-        trailer: '4A_X-Dvl0ws', episodes: 47, seasons: 2,
-        tags: ['trending', 'must-watch'], dateAdded: '2024-02-15'
-    },
-    {
-        id: 'ani_dn', title: 'Death Note', type: 'anime', year: 2006, rating: 9.0, genre: 'thriller',
-        description: 'A genius student finds a notebook that kills anyone whose name is written in it.',
-        poster: 'https://image.tmdb.org/t/p/w500/iigTJJskR1PcjjXqxdyJwVB3BoU.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/A2t1T2nSMjpzcCMpMFbnQTSP4FU.jpg',
-        trailer: 'NlJZ-YgAt-c', episodes: 37, seasons: 1,
-        tags: ['top-rated', 'must-watch'], dateAdded: '2024-01-12'
-    },
-    {
-        id: 'ani_csm', title: 'Chainsaw Man', type: 'anime', year: 2022, rating: 8.5, genre: 'action',
-        description: 'Denji merges with his devil pet Pochita to become Chainsaw Man, a devil-human hybrid hunter.',
-        poster: 'https://image.tmdb.org/t/p/w500/yVtx7Xn9UxNJqvG2BkvhCcmed9S.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/5LIRV0MBNRnoeplbOPgkCVmbUbm.jpg',
-        trailer: 'q15CRdE5Bv0', episodes: 12, seasons: 1,
-        tags: ['trending', 'must-watch'], dateAdded: '2024-03-08'
-    },
+{id:'m26',title:'The Hobbit: The Desolation of Smaug',type:'movie',year:2013,rating:7.8,genre:'fantasy',description:'The dwarves continue their journey to reclaim their homeland, facing the fearsome dragon Smaug.',poster:'https://image.tmdb.org/t/p/w500/xQYiXsheRCDBA39DOrmaw1aSpbk.jpg',backdrop:'https://image.tmdb.org/t/p/original/sHIM4O7KnHiEmGCCisMH8lcK5gh.jpg',trailer:'JDG2m5hN1vo',duration:'2h 41m',tags:['must-watch'],dateAdded:'2024-02-08'},
+{id:'m27',title:'The Hobbit: The Battle of the Five Armies',type:'movie',year:2014,rating:7.4,genre:'fantasy',description:'Bilbo and company attempt to defend Erebor from armies converging on the Lonely Mountain.',poster:'https://image.tmdb.org/t/p/w500/xT98tLqatZPQApyRmlPL12LtiWp.jpg',backdrop:'https://image.tmdb.org/t/p/original/rByJflzv9JDw15MxIeUHnPjJQUX.jpg',trailer:'iVAgTiBrrDA',duration:'2h 24m',tags:['must-watch'],dateAdded:'2024-02-09'},
+{id:'m28',title:'Harry Potter and the Philosopher\'s Stone',type:'movie',year:2001,rating:7.6,genre:'fantasy',description:'An orphaned boy enrolls in a school of wizardry, where he learns the truth about himself and his family.',poster:'https://image.tmdb.org/t/p/w500/wuMc08IPKEatf9rnMNXvIDxqP4W.jpg',backdrop:'https://image.tmdb.org/t/p/original/hziiv14OpD73u9gAak4XDDfBKa2.jpg',trailer:'VyHV0BRtdxo',duration:'2h 32m',tags:['must-watch','top-rated'],dateAdded:'2024-02-10'},
+{id:'m29',title:'Harry Potter and the Chamber of Secrets',type:'movie',year:2002,rating:7.4,genre:'fantasy',description:'Harry returns to Hogwarts where a mysterious force is petrifying students one by one.',poster:'https://image.tmdb.org/t/p/w500/sdEOH0992YZ0QSxgXNIGLq1ToUi.jpg',backdrop:'https://image.tmdb.org/t/p/original/1stUIsjawROZxjiCMtqqXqgEC12.jpg',trailer:'fUK3JFJbezc',duration:'2h 41m',tags:['must-watch'],dateAdded:'2024-02-11'},
+{id:'m30',title:'Harry Potter and the Prisoner of Azkaban',type:'movie',year:2004,rating:7.9,genre:'fantasy',description:'Harry must confront an escaped prisoner who poses a dangerous threat to the wizarding world.',poster:'https://image.tmdb.org/t/p/w500/796Xtv1Zj0hpMxBGYpGYbpJeRjy.jpg',backdrop:'https://image.tmdb.org/t/p/original/vbY95t58MDArtyUXUIb8Fx6dCqV.jpg',trailer:'lAxgztbYDbs',duration:'2h 22m',tags:['must-watch','top-rated'],dateAdded:'2024-02-12'},
 
-    // ═══════ BLEACH (COMPLETE) ═══════
-    {
-        id: 'ani_bleach', title: 'Bleach', type: 'anime', year: 2004, rating: 8.2, genre: 'action',
-        description: 'Ichigo Kurosaki gains Soul Reaper powers and must protect the living world from evil spirits called Hollows while uncovering a conspiracy within the Soul Society.',
-        poster: 'https://image.tmdb.org/t/p/w500/2EbBkCoKB68YgnPbQOlStmlySqD.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/qtfMRKYbWoX1DsgnkrU4YkuKUoE.jpg',
-        trailer: '--IcmZkvL0Q', episodes: 366, seasons: 16,
-        tags: ['top-rated', 'must-watch', 'trending'], dateAdded: '2024-01-01'
-    },
-    {
-        id: 'ani_bleach_tybw', title: 'Bleach: Thousand-Year Blood War', type: 'anime', year: 2022, rating: 9.1, genre: 'action',
-        description: 'The final arc of Bleach. The Wandenreich, a hidden empire of Quincies, declares war on the Soul Society. Ichigo must unlock his true power to face their leader, Yhwach.',
-        poster: 'https://image.tmdb.org/t/p/w500/iS3nIoMZPXqJBKmW8DkutfijqLh.jpg',
-        backdrop: 'https://image.tmdb.org/t/p/original/sV77RkH7NJCxQaEGJzIyJOsVQ2G.jpg',
-        trailer: 'e8YBesRKq_U', episodes: 52, seasons: 4,
-        tags: ['trending', 'must-watch', 'top-rated'], dateAdded: '2024-03-25'
-    },
+{id:'m31',title:'Harry Potter and the Goblet of Fire',type:'movie',year:2005,rating:7.7,genre:'fantasy',description:'Harry is mysteriously entered into the Triwizard Tournament, a dangerous magical competition.',poster:'https://image.tmdb.org/t/p/w500/fEZpFDpfKaBig227kkXiq5XCkE0.jpg',backdrop:'https://image.tmdb.org/t/p/original/5Hkd6VlGa3m1BbAYmFBXplSIQwA.jpg',trailer:'3EGojp4Hh3I',duration:'2h 37m',tags:['must-watch'],dateAdded:'2024-02-13'},
+{id:'m32',title:'Harry Potter and the Order of the Phoenix',type:'movie',year:2007,rating:7.5,genre:'fantasy',description:'Harry and Dumbledore\'s Army face the return of Voldemort while the Ministry denies the truth.',poster:'https://image.tmdb.org/t/p/w500/s836PRwHkLjrOJrfW27TtlIE1n.jpg',backdrop:'https://image.tmdb.org/t/p/original/jVpEJ3GjfPEBWC8GhNKHGT7JGVY.jpg',trailer:'y7hdl-RaRGc',duration:'2h 18m',tags:['must-watch'],dateAdded:'2024-02-14'},
+{id:'m33',title:'Harry Potter and the Half-Blood Prince',type:'movie',year:2009,rating:7.6,genre:'fantasy',description:'Dumbledore and Harry work together to uncover the secret to Voldemort\'s immortality.',poster:'https://image.tmdb.org/t/p/w500/z7uo3vwIFvPOzl0khdMCIO0pczm.jpg',backdrop:'https://image.tmdb.org/t/p/original/urDWNffjwmNi5IQaezw9GwqkUXa.jpg',trailer:'JYLdTpMoPnY',duration:'2h 33m',tags:['must-watch'],dateAdded:'2024-02-15'},
+{id:'m34',title:'Harry Potter and the Deathly Hallows Part 1',type:'movie',year:2010,rating:7.7,genre:'fantasy',description:'Harry, Ron, and Hermione set out to destroy the remaining Horcruxes in their fight against Voldemort.',poster:'https://image.tmdb.org/t/p/w500/iGoXIpQb7Pot00EEdwpwPajheZ5.jpg',backdrop:'https://image.tmdb.org/t/p/original/rFljUJhQczuW3kHFNIIvPNcBOEo.jpg',trailer:'MxqsmsA7pvQ',duration:'2h 26m',tags:['must-watch'],dateAdded:'2024-02-16'},
+{id:'m35',title:'Harry Potter and the Deathly Hallows Part 2',type:'movie',year:2011,rating:8.1,genre:'fantasy',description:'The final battle between Harry and Voldemort determines the fate of the wizarding world.',poster:'https://image.tmdb.org/t/p/w500/c54HpQmuwXjHq2C9wmoACjxoomZ.jpg',backdrop:'https://image.tmdb.org/t/p/original/n5A7brJCjejceZmHyujwUTVgQNC.jpg',trailer:'5NYt1qirBWg',duration:'2h 10m',tags:['must-watch','top-rated'],dateAdded:'2024-02-17'},
+
+{id:'m36',title:'The Hunger Games',type:'movie',year:2012,rating:7.2,genre:'action',description:'Katniss Everdeen voluntarily takes her younger sister\'s place in the Hunger Games.',poster:'https://image.tmdb.org/t/p/w500/yDScrpOCnk2QrbGMmUoVSB5TqhO.jpg',backdrop:'https://image.tmdb.org/t/p/original/pKiMNhPFBW4AOJVkfNsQGbIPLXm.jpg',trailer:'mfBbSwAliEE',duration:'2h 22m',tags:['must-watch'],dateAdded:'2024-02-18'},
+{id:'m37',title:'The Hunger Games: Catching Fire',type:'movie',year:2013,rating:7.5,genre:'action',description:'Katniss and Peeta are forced back into the arena for a special edition of the Hunger Games.',poster:'https://image.tmdb.org/t/p/w500/wEJMBBLAbzO6JnFC0W5oGW5PdQn.jpg',backdrop:'https://image.tmdb.org/t/p/original/5CmHMcMBRUoO5FlH4aHqHchkVs3.jpg',trailer:'EAzGXqJSDMg',duration:'2h 26m',tags:['must-watch'],dateAdded:'2024-02-19'},
+{id:'m38',title:'The Hunger Games: Mockingjay Part 1',type:'movie',year:2014,rating:6.7,genre:'action',description:'Katniss becomes the symbol of rebellion against the tyrannical Capitol.',poster:'https://image.tmdb.org/t/p/w500/4FAA18ZIja70d1Tu5hr5cj2q1sB.jpg',backdrop:'https://image.tmdb.org/t/p/original/4PwyB0ElsXMij2ufGOHib5Tpkfh.jpg',trailer:'3PkkHsuMrho',duration:'2h 3m',tags:['must-watch'],dateAdded:'2024-02-20'},
+{id:'m39',title:'The Hunger Games: Mockingjay Part 2',type:'movie',year:2015,rating:6.6,genre:'action',description:'Katniss and her team embark on a mission to assassinate President Snow and liberate Panem.',poster:'https://image.tmdb.org/t/p/w500/qGmWAkMsXqFcn8cJRXanqH6sZFN.jpg',backdrop:'https://image.tmdb.org/t/p/original/2lBluYdFo2KDBMqNY7CAMhbpnKQ.jpg',trailer:'n-7K_OjsDCQ',duration:'2h 17m',tags:['must-watch'],dateAdded:'2024-02-21'},
+{id:'m40',title:'Joker',type:'movie',year:2019,rating:8.4,genre:'thriller',description:'A mentally troubled comedian descends into madness and becomes the criminal mastermind known as the Joker.',poster:'https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg',backdrop:'https://image.tmdb.org/t/p/original/n6bUvigpRFqSwmPp1m2YMatNfXo.jpg',trailer:'zAGVQLHvwOY',duration:'2h 2m',tags:['trending','must-watch','top-rated'],dateAdded:'2024-02-22'},
+
+{id:'m41',title:'The Wolf of Wall Street',type:'movie',year:2013,rating:8.2,genre:'drama',description:'Based on the true story of Jordan Belfort, from his rise to a wealthy stockbroker to his fall.',poster:'https://image.tmdb.org/t/p/w500/34m2tygAYBGqA9MXKhRDtzaAA7K.jpg',backdrop:'https://image.tmdb.org/t/p/original/cWUOv3H7YFwvKeaQhoAQTLLpo9Z.jpg',trailer:'iszwuX1AK6A',duration:'3h 0m',tags:['must-watch','top-rated'],dateAdded:'2024-02-23'},
+{id:'m42',title:'Whiplash',type:'movie',year:2014,rating:8.5,genre:'drama',description:'A promising young drummer enrolls at a cut-throat music conservatory under a terrifying instructor.',poster:'https://image.tmdb.org/t/p/w500/7fn624j5lj3xTme2SgiLCeuedmO.jpg',backdrop:'https://image.tmdb.org/t/p/original/fRGxZuo7jJUWQsVg9PREb98Aclp.jpg',trailer:'7d_jQycdQGo',duration:'1h 47m',tags:['must-watch','top-rated'],dateAdded:'2024-02-24'},
+{id:'m43',title:'No Country for Old Men',type:'movie',year:2007,rating:8.2,genre:'thriller',description:'A hunter stumbles upon a drug deal gone wrong and takes a suitcase of cash, setting off a chain of violence.',poster:'https://image.tmdb.org/t/p/w500/bj1v6YKF8yHqA489GFiPGBobFUE.jpg',backdrop:'https://image.tmdb.org/t/p/original/ewMMRwDsJqZCIOkGt0bVu9sITSj.jpg',trailer:'38A__WT_7q8',duration:'2h 2m',tags:['must-watch','top-rated'],dateAdded:'2024-02-25'},
+{id:'m44',title:'Django Unchained',type:'movie',year:2012,rating:8.4,genre:'action',description:'A freed slave sets out to rescue his wife from a brutal plantation owner with the help of a bounty hunter.',poster:'https://image.tmdb.org/t/p/w500/7oWY8VDWW7thTzWh3OKYRkWUlD5.jpg',backdrop:'https://image.tmdb.org/t/p/original/2oZklIzUbvZXXzIFzv7Hi68d6xf.jpg',trailer:'0fUCuvNlOCg',duration:'2h 45m',tags:['must-watch','top-rated'],dateAdded:'2024-02-26'},
+{id:'m45',title:'The Prestige',type:'movie',year:2006,rating:8.5,genre:'thriller',description:'Two rival magicians engage in a bitter battle of wits, each trying to outdo the other\'s illusions.',poster:'https://image.tmdb.org/t/p/w500/tRNlZbgNCNOpLpbPEz5L8G8A0JN.jpg',backdrop:'https://image.tmdb.org/t/p/original/rZ3jXscjNtje0VoqFXcJBpZEYB6.jpg',trailer:'ijXkWRi-s2g',duration:'2h 10m',tags:['must-watch','top-rated'],dateAdded:'2024-02-27'},
+
+{id:'tv01',title:'Game of Thrones',type:'tvshow',year:2011,rating:9.3,genre:'fantasy',description:'Nine noble families fight for control over the lands of Westeros while an ancient enemy returns.',poster:'https://image.tmdb.org/t/p/w500/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg',backdrop:'https://image.tmdb.org/t/p/original/2OMB0ynKlyIenMJWI2Dy9IWT4c.jpg',trailer:'KPLWWIOCOOQ',episodes:73,seasons:8,tags:['must-watch','top-rated'],dateAdded:'2024-03-01'},
+{id:'tv02',title:'The Witcher',type:'tvshow',year:2019,rating:8.2,genre:'fantasy',description:'Geralt of Rivia, a solitary monster hunter, struggles to find his place in a world of beasts and humans.',poster:'https://image.tmdb.org/t/p/w500/7vjaCdMw15FEbXyLQTVa04URsPm.jpg',backdrop:'https://image.tmdb.org/t/p/original/jBJWaqoSCiARWtfV0GlqHrcdiJq.jpg',trailer:'ndl1W4ltcmg',episodes:24,seasons:3,tags:['trending','must-watch'],dateAdded:'2024-03-02'},
+{id:'tv03',title:'Breaking Bad',type:'tvshow',year:2008,rating:9.5,genre:'drama',description:'A high school chemistry teacher turned methamphetamine manufacturer partners with a former student.',poster:'https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg',backdrop:'https://image.tmdb.org/t/p/original/tsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg',trailer:'HhesaQXLuRY',episodes:62,seasons:5,tags:['must-watch','top-rated'],dateAdded:'2024-03-03'},
+{id:'tv04',title:'Stranger Things',type:'tvshow',year:2016,rating:8.7,genre:'sci-fi',description:'When a young boy disappears, his friends, family, and police uncover a series of supernatural mysteries.',poster:'https://image.tmdb.org/t/p/w500/49WJfeN0moxb9IPfGn8AIqMGskD.jpg',backdrop:'https://image.tmdb.org/t/p/original/56v2KjBlYTswRECcRJcGKPGeZ01.jpg',trailer:'b9EkMc79ZSU',episodes:34,seasons:4,tags:['trending','must-watch','top-rated'],dateAdded:'2024-03-04'},
+{id:'tv05',title:'The Last of Us',type:'tvshow',year:2023,rating:8.8,genre:'drama',description:'Joel and Ellie traverse a post-apocalyptic America overrun by deadly fungal infections.',poster:'https://image.tmdb.org/t/p/w500/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg',backdrop:'https://image.tmdb.org/t/p/original/uDgy6hyPd82kOHh6I95FLtLnj6p.jpg',trailer:'uLtkt8BonwM',episodes:16,seasons:2,tags:['trending','must-watch','top-rated'],dateAdded:'2024-03-05'},
+
+{id:'tv06',title:'Arcane',type:'tvshow',year:2021,rating:9.0,genre:'action',description:'Set in the utopian Piltover and the oppressed underground of Zaun, the story follows sisters Vi and Jinx.',poster:'https://image.tmdb.org/t/p/w500/fqldf2t8ztc9aiwn3k6mlX3tvRT.jpg',backdrop:'https://image.tmdb.org/t/p/original/rkB4LyikfHfCVzHtAaPayhASWy3.jpg',trailer:'fXmAurh012s',episodes:18,seasons:2,tags:['trending','must-watch','top-rated'],dateAdded:'2024-03-06'},
+{id:'tv07',title:'The Boys',type:'tvshow',year:2019,rating:8.7,genre:'action',description:'A group of vigilantes set out to take down corrupt superheroes who abuse their superpowers.',poster:'https://image.tmdb.org/t/p/w500/stTEycfG9Oa10K2zoLQYwVJSTt7.jpg',backdrop:'https://image.tmdb.org/t/p/original/7dzngS8pLkGJpyciRiITF2RcRKe.jpg',trailer:'tcrNsIaQkb4',episodes:32,seasons:4,tags:['trending','must-watch','top-rated'],dateAdded:'2024-03-07'},
+{id:'tv08',title:'House of the Dragon',type:'tvshow',year:2022,rating:8.4,genre:'fantasy',description:'The story of the Targaryen civil war that took place about 200 years before events of Game of Thrones.',poster:'https://image.tmdb.org/t/p/w500/z2yahl2uefxDCl0nogcRBstwruJ.jpg',backdrop:'https://image.tmdb.org/t/p/original/etj8E2o0Bud0HkONVQPjyCkIvpv.jpg',trailer:'DotnJ7tTA34',episodes:18,seasons:2,tags:['trending','must-watch'],dateAdded:'2024-03-08'},
+{id:'tv09',title:'Wednesday',type:'tvshow',year:2022,rating:8.1,genre:'comedy',description:'Wednesday Addams investigates a murder spree while making new friends at Nevermore Academy.',poster:'https://image.tmdb.org/t/p/w500/9PFonBhy4cQy7Jz20NpMygczOkv.jpg',backdrop:'https://image.tmdb.org/t/p/original/iHSwvRVsNBVEGVCZ4YMo3HHen4H.jpg',trailer:'Di310WS8zLk',episodes:8,seasons:1,tags:['trending','must-watch'],dateAdded:'2024-03-09'},
+{id:'tv10',title:'Peaky Blinders',type:'tvshow',year:2013,rating:8.8,genre:'crime',description:'A gangster family epic set in Birmingham, England in the aftermath of World War I.',poster:'https://image.tmdb.org/t/p/w500/vUUqzWa2LnHIVqkaKVlVGkVcZIW.jpg',backdrop:'https://image.tmdb.org/t/p/original/wiE9doxiLwq3WCGamDIOb2PqBqc.jpg',trailer:'oVzVdvGIC7U',episodes:36,seasons:6,tags:['must-watch','top-rated'],dateAdded:'2024-03-10'},
+
+{id:'tv11',title:'Money Heist',type:'tvshow',year:2017,rating:8.2,genre:'crime',description:'An unusual group of robbers attempt to carry out the most perfect robbery in Spanish history.',poster:'https://image.tmdb.org/t/p/w500/reEMJA1uzscCbkpeRJeTT2bjqUp.jpg',backdrop:'https://image.tmdb.org/t/p/original/xGexTKCJDkl12dTW4YCBDXWb1AD.jpg',trailer:'bJCsWbHRKmo',episodes:41,seasons:5,tags:['trending','must-watch'],dateAdded:'2024-03-11'},
+{id:'tv12',title:'Squid Game',type:'tvshow',year:2021,rating:8.0,genre:'thriller',description:'Hundreds of cash-strapped players accept an invitation to compete in deadly children\'s games for a prize.',poster:'https://image.tmdb.org/t/p/w500/dDlEmu3EZ0Pgg93K2SVNLCjCSvE.jpg',backdrop:'https://image.tmdb.org/t/p/original/oaGvjB0DvdhXhOAuADfHb261ZHa.jpg',trailer:'oqxAJKy0ii4',episodes:9,seasons:1,tags:['trending','must-watch'],dateAdded:'2024-03-12'},
+{id:'tv13',title:'The Mandalorian',type:'tvshow',year:2019,rating:8.7,genre:'sci-fi',description:'A lone bounty hunter in the outer reaches of the galaxy protects a mysterious alien child.',poster:'https://image.tmdb.org/t/p/w500/sWgBv7LV2PRoQgkxwlibdGXKz1S.jpg',backdrop:'https://image.tmdb.org/t/p/original/9ijMGlJKqcslswWUzTEwScm82Gs.jpg',trailer:'aOC8E8z_ifw',episodes:24,seasons:3,tags:['trending','must-watch'],dateAdded:'2024-03-13'},
+{id:'tv14',title:'Loki',type:'tvshow',year:2021,rating:8.2,genre:'sci-fi',description:'The mercurial villain Loki resumes his role as the God of Mischief in a new series set after Endgame.',poster:'https://image.tmdb.org/t/p/w500/voHUmluYmKyleFkTu3lOXQPd8s.jpg',backdrop:'https://image.tmdb.org/t/p/original/q3jHCb4dMfYF6ojikKuHd6LscxC.jpg',trailer:'nW948Va-l10',episodes:12,seasons:2,tags:['trending','must-watch'],dateAdded:'2024-03-14'},
+{id:'tv15',title:'Dark',type:'tvshow',year:2017,rating:8.8,genre:'sci-fi',description:'A missing child sets four families on a frantic hunt for answers as they uncover a mind-bending mystery spanning three generations.',poster:'https://image.tmdb.org/t/p/w500/apbrbWs8M9lyOpJYU5WXrpFbk1Z.jpg',backdrop:'https://image.tmdb.org/t/p/original/3lBDg3i6nn5R2NKFCJ6oKyUo2j5.jpg',trailer:'ESEUoa-mz2c',episodes:26,seasons:3,tags:['must-watch','top-rated'],dateAdded:'2024-03-15'},
+{id:'tv16',title:'Invincible',type:'tvshow',year:2021,rating:8.7,genre:'action',description:'An adult animated series about a teenager whose father is the most powerful superhero on the planet.',poster:'https://image.tmdb.org/t/p/w500/yDWJYRAwMNKbIYT8ZB33qy84uzO.jpg',backdrop:'https://image.tmdb.org/t/p/original/6UH52Fmau8RPsMAbQbjwN3wJSCj.jpg',trailer:'773YPNzl_-o',episodes:16,seasons:2,tags:['trending','must-watch','top-rated'],dateAdded:'2024-03-16'},
+
+{id:'a01',title:'Solo Leveling',type:'anime',year:2024,rating:8.8,genre:'action',description:'After being dubbed the weakest hunter, Sung Jinwoo gains a mysterious power that allows him to level up without limit.',poster:'https://image.tmdb.org/t/p/w500/geCRueV3ElhRTr0xtJuEWJt6dJ1.jpg',backdrop:'https://image.tmdb.org/t/p/original/4BfGtOMiUfNtEBwMCnX9U9Py1Fe.jpg',trailer:'Yul3Yteaj9M',episodes:24,seasons:2,tags:['trending','must-watch','top-rated'],dateAdded:'2024-04-01'},
+{id:'a02',title:'Bleach',type:'anime',year:2004,rating:8.2,genre:'action',description:'High school student Ichigo Kurosaki gains Soul Reaper powers and must protect the living and the dead.',poster:'https://image.tmdb.org/t/p/w500/2EbBECKjAHIDv7GYceQ0DB2ya6s.jpg',backdrop:'https://image.tmdb.org/t/p/original/qtfMr08KQsWXnCHY4C8UfVdx5JU.jpg',trailer:'--IcmZkvL0Q',episodes:366,seasons:16,tags:['must-watch','top-rated'],dateAdded:'2024-04-02'},
+{id:'a03',title:'Bleach: Thousand-Year Blood War',type:'anime',year:2022,rating:9.1,genre:'action',description:'Ichigo and the Soul Reapers face their greatest threat as the Quincy army declares war on Soul Society.',poster:'https://image.tmdb.org/t/p/w500/lHMVnhCDkh8ciQFoYDIqkPDNVUm.jpg',backdrop:'https://image.tmdb.org/t/p/original/dqa7f3KZHQ0yY3m5S3bS6PFas1s.jpg',trailer:'e8YBesRKq_U',episodes:52,seasons:4,tags:['trending','must-watch','top-rated'],dateAdded:'2024-04-03'},
+{id:'a04',title:'Attack on Titan',type:'anime',year:2013,rating:9.0,genre:'action',description:'Humanity lives inside cities surrounded by enormous walls due to the Titans, gigantic humanoid creatures.',poster:'https://image.tmdb.org/t/p/w500/hTP1DtLGFamjfu8WyGBBPlwJlN.jpg',backdrop:'https://image.tmdb.org/t/p/original/rqbCbjB19amtOtFQbb3K2lgm2zv.jpg',trailer:'MGRm4IzK1SQ',episodes:87,seasons:4,tags:['must-watch','top-rated'],dateAdded:'2024-04-04'},
+{id:'a05',title:'Demon Slayer',type:'anime',year:2019,rating:8.7,genre:'action',description:'A young man joins the Demon Slayer Corps to avenge his family and cure his sister who has been turned into a demon.',poster:'https://image.tmdb.org/t/p/w500/xUfRZu2mi8jmRhn8M02IV1JdyJo.jpg',backdrop:'https://image.tmdb.org/t/p/original/5DwsmNGKp70GZYI7JDhtpkFPSYj.jpg',trailer:'VQGCKyvRw3A',episodes:55,seasons:4,tags:['trending','must-watch','top-rated'],dateAdded:'2024-04-05'},
+
+{id:'a06',title:'Jujutsu Kaisen',type:'anime',year:2020,rating:8.6,genre:'action',description:'A boy swallows a cursed talisman and becomes host to a powerful curse, enrolling in a school for sorcerers.',poster:'https://image.tmdb.org/t/p/w500/hFWP5HkbVEe40hrXfstMlMGHOd0.jpg',backdrop:'https://image.tmdb.org/t/p/original/dIWwZW7dJJtqC6CgWzYkNVKIUm8.jpg',trailer:'4A_X-Dvl0ws',episodes:47,seasons:2,tags:['trending','must-watch','top-rated'],dateAdded:'2024-04-06'},
+{id:'a07',title:'Death Note',type:'anime',year:2006,rating:9.0,genre:'thriller',description:'A high school student discovers a supernatural notebook that kills anyone whose name is written in it.',poster:'https://image.tmdb.org/t/p/w500/g8CdLkdHJ0GmuN6MEcCS3mLJmgQ.jpg',backdrop:'https://image.tmdb.org/t/p/original/A2GCWOlHOaEc2eSQwvVH3GxQe7B.jpg',trailer:'NlJZ-YgAt-c',episodes:37,seasons:1,tags:['must-watch','top-rated'],dateAdded:'2024-04-07'},
+{id:'a08',title:'Chainsaw Man',type:'anime',year:2022,rating:8.5,genre:'action',description:'Denji is a teenage boy who merges with his pet devil to become a hybrid with chainsaws for arms.',poster:'https://image.tmdb.org/t/p/w500/npdB6eFzizki0WaZ1OvKcJV3pv.jpg',backdrop:'https://image.tmdb.org/t/p/original/nRFtiEiLSGWlxPsDnSBOe2CVvSi.jpg',trailer:'q15CRdE5Bv0',episodes:12,seasons:1,tags:['trending','must-watch'],dateAdded:'2024-04-08'},
+{id:'a09',title:'Naruto',type:'anime',year:2002,rating:8.3,genre:'action',description:'A young ninja with a sealed demon fox spirit strives to become the leader of his village.',poster:'https://image.tmdb.org/t/p/w500/xppeysfvDKVx775MFuH8Z9BlpMk.jpg',backdrop:'https://image.tmdb.org/t/p/original/jfFdBSroVOPMOCiiLDNLBVXVbaZ.jpg',trailer:'QczGoCmX-pI',episodes:220,seasons:5,tags:['must-watch','top-rated'],dateAdded:'2024-04-09'},
+{id:'a10',title:'Naruto Shippuden',type:'anime',year:2007,rating:8.7,genre:'action',description:'Naruto returns after training to face new threats and pursue his goal of becoming Hokage.',poster:'https://image.tmdb.org/t/p/w500/zAYRe2bJxpWTVrwwmBc00VFkAf4.jpg',backdrop:'https://image.tmdb.org/t/p/original/jZoIoSjXLflIPBOBNX1Xxap5HKM.jpg',trailer:'1dy2zLVyYmk',episodes:500,seasons:21,tags:['must-watch','top-rated'],dateAdded:'2024-04-10'},
+
+{id:'a11',title:'One Piece',type:'anime',year:1999,rating:8.9,genre:'adventure',description:'Monkey D. Luffy and his crew search for the ultimate treasure, the One Piece, to become King of the Pirates.',poster:'https://image.tmdb.org/t/p/w500/cMD9Ygz11zjJzAovURpO75Qg7rT.jpg',backdrop:'https://image.tmdb.org/t/p/original/2rmK7mnchw9Xr3XdiTFSxTTiXqt.jpg',trailer:'MCb13lbVGE0',episodes:1100,seasons:21,tags:['must-watch','top-rated'],dateAdded:'2024-04-11'},
+{id:'a12',title:'My Hero Academia',type:'anime',year:2016,rating:7.8,genre:'action',description:'In a world of superpowers, a powerless boy dreams of becoming a hero and enrolls in a top hero academy.',poster:'https://image.tmdb.org/t/p/w500/ivOLM47yJt90P19RH1GlB4MiUQR.jpg',backdrop:'https://image.tmdb.org/t/p/original/9idvRwVhRcRZoMFHmEq5DZNRGAB.jpg',trailer:'D5Y1v2JGMSI',episodes:138,seasons:7,tags:['trending','must-watch'],dateAdded:'2024-04-12'},
+{id:'a13',title:'Fullmetal Alchemist: Brotherhood',type:'anime',year:2009,rating:9.1,genre:'action',description:'Two brothers use alchemy to search for the Philosopher\'s Stone to restore their bodies after a failed experiment.',poster:'https://image.tmdb.org/t/p/w500/qlJGlxJPg9A6H66MZgLAgyhEUQh.jpg',backdrop:'https://image.tmdb.org/t/p/original/2W4ZvACgstdiMmSiFo9fGGpNI5e.jpg',trailer:'--IcmZkvL0Q',episodes:64,seasons:1,tags:['must-watch','top-rated'],dateAdded:'2024-04-13'},
+{id:'a14',title:'Hunter x Hunter',type:'anime',year:2011,rating:9.0,genre:'action',description:'Gon Freecss aspires to become a Hunter to find his father who left him at a young age.',poster:'https://image.tmdb.org/t/p/w500/geCmRFbC0YCJInnBqlDSYXycXl1.jpg',backdrop:'https://image.tmdb.org/t/p/original/hxqTMxvHKp5jQ3KRQCoQXZMQVy4.jpg',trailer:'d6kBeJjTGnY',episodes:148,seasons:6,tags:['must-watch','top-rated'],dateAdded:'2024-04-14'},
+{id:'a15',title:'One Punch Man',type:'anime',year:2015,rating:8.7,genre:'action',description:'A superhero who can defeat any opponent with a single punch seeks to find a worthy adversary.',poster:'https://image.tmdb.org/t/p/w500/iE3s0lG5QVdEHOEZnoAxqlaXBFL.jpg',backdrop:'https://image.tmdb.org/t/p/original/4PJIwSk4cL2bQkY7pAe4vpIX2iX.jpg',trailer:'A3Jks90zaEE',episodes:24,seasons:2,tags:['must-watch','top-rated'],dateAdded:'2024-04-15'},
+
+{id:'a16',title:'Spy x Family',type:'anime',year:2022,rating:8.5,genre:'comedy',description:'A spy must build a fake family to execute a mission, not realizing his daughter is a telepath and his wife an assassin.',poster:'https://image.tmdb.org/t/p/w500/3r4LYFiEJOPsNUFiCXGYnSSFCRt.jpg',backdrop:'https://image.tmdb.org/t/p/original/9HBSGM0K4FN3F42NOz5B5u6a4sm.jpg',trailer:'ofXigVM6dDQ',episodes:37,seasons:2,tags:['trending','must-watch'],dateAdded:'2024-04-16'},
+{id:'a17',title:'The Eminence in Shadow',type:'anime',year:2022,rating:8.3,genre:'action',description:'A boy who dreams of becoming a mastermind in the shadows is reincarnated in a fantasy world where his delusions become reality.',poster:'https://image.tmdb.org/t/p/w500/jge36lITcOxFuVDdB5fKYjugUH.jpg',backdrop:'https://image.tmdb.org/t/p/original/bWnLlqMdN6GlMfPB9BehMUYsDN.jpg',trailer:'wG5AoEiXiVc',episodes:32,seasons:2,tags:['trending','must-watch'],dateAdded:'2024-04-17'},
+{id:'a18',title:'Akame ga Kill',type:'anime',year:2014,rating:7.8,genre:'action',description:'A countryside boy joins a group of assassins fighting against corruption in the Empire.',poster:'https://image.tmdb.org/t/p/w500/cBZXtJNRmixLQiJMvYz8JKtYW5o.jpg',backdrop:'https://image.tmdb.org/t/p/original/8P6H0wPOFNahpJmB8JHUWCT9kU.jpg',trailer:'NIeKMKwON0U',episodes:24,seasons:1,tags:['must-watch'],dateAdded:'2024-04-18'},
+{id:'a19',title:'Darling in the Franxx',type:'anime',year:2018,rating:7.5,genre:'mecha',description:'In a post-apocalyptic future, children pilot giant robots called Franxx in pairs to fight mysterious creatures.',poster:'https://image.tmdb.org/t/p/w500/rH2e1hM5d0YGMLK8TDfNASbWMi0.jpg',backdrop:'https://image.tmdb.org/t/p/original/xc8sSHAH3JbIp0G9VxSqHmfJ1F6.jpg',trailer:'JGdcNritDvM',episodes:24,seasons:1,tags:['trending'],dateAdded:'2024-04-19'},
+{id:'a20',title:'Fate/stay night: Unlimited Blade Works',type:'anime',year:2014,rating:8.1,genre:'action',description:'A young mage is drawn into the Holy Grail War, a battle royale among mages and heroic spirits.',poster:'https://image.tmdb.org/t/p/w500/lHPoFxJCjeLDqdUXxnVF7Wp3Cfq.jpg',backdrop:'https://image.tmdb.org/t/p/original/5Q2FnpfnGwiNf5jh3Z4F2qUKs53.jpg',trailer:'gDFWHD9cm-E',episodes:25,seasons:2,tags:['must-watch'],dateAdded:'2024-04-20'},
+
+{id:'a21',title:'Fate/Zero',type:'anime',year:2011,rating:8.3,genre:'action',description:'The prequel to Fate/stay night, depicting the Fourth Holy Grail War with darker and more mature themes.',poster:'https://image.tmdb.org/t/p/w500/yJjVbHl2uaAnbG5nl2MoYt5YAbr.jpg',backdrop:'https://image.tmdb.org/t/p/original/p9B1LGaNSRKwWsQFuxN6pG6sEfY.jpg',trailer:'Kwrg4VsH1IM',episodes:25,seasons:2,tags:['must-watch','top-rated'],dateAdded:'2024-04-21'},
+{id:'a22',title:'Mob Psycho 100',type:'anime',year:2016,rating:8.6,genre:'action',description:'A psychic middle school boy tries to live a normal life while suppressing his immense supernatural abilities.',poster:'https://image.tmdb.org/t/p/w500/vAkch2y7w8wvJtCi5v1PyAzgem4.jpg',backdrop:'https://image.tmdb.org/t/p/original/sQlAqO8hVB3dP1BN7ylkS15pJOV.jpg',trailer:'Bw-5Lka-7Lk',episodes:37,seasons:3,tags:['must-watch','top-rated'],dateAdded:'2024-04-22'},
+{id:'a23',title:'Vinland Saga',type:'anime',year:2019,rating:8.8,genre:'action',description:'A young Viking warrior seeks vengeance against his father\'s killer while questioning the meaning of true strength.',poster:'https://image.tmdb.org/t/p/w500/f4oZTcfGrVTGMOkOYSLPBnKmhvc.jpg',backdrop:'https://image.tmdb.org/t/p/original/bBiF0a0c7GiK8xfclZiKfAGKCL.jpg',trailer:'7U7BDn-gU18',episodes:48,seasons:2,tags:['must-watch','top-rated'],dateAdded:'2024-04-23'},
+{id:'a24',title:'Tokyo Ghoul',type:'anime',year:2014,rating:7.7,genre:'horror',description:'A college student becomes half-ghoul after a deadly encounter, struggling between human and ghoul worlds.',poster:'https://image.tmdb.org/t/p/w500/f5rVr1Wrwgey9BOkqKXfGQVFxmG.jpg',backdrop:'https://image.tmdb.org/t/p/original/3GiLMqCAm6QiNw3oR3Lzk4pRPLf.jpg',trailer:'vGuQeQsoRgU',episodes:48,seasons:4,tags:['trending','must-watch'],dateAdded:'2024-04-24'},
+{id:'a25',title:'Sword Art Online',type:'anime',year:2012,rating:7.2,genre:'action',description:'Players become trapped in a virtual reality MMORPG where death in-game means death in real life.',poster:'https://image.tmdb.org/t/p/w500/mi0JKkXhbH9mBbz3FHyiHGhB6X4.jpg',backdrop:'https://image.tmdb.org/t/p/original/xCFiIOLSdTQ0cATJhJ3Dq5xnMQR.jpg',trailer:'6ohYYtxfDCg',episodes:96,seasons:4,tags:['must-watch'],dateAdded:'2024-04-25'},
+
+{id:'a26',title:'Dragon Ball Z',type:'anime',year:1989,rating:8.7,genre:'action',description:'Goku and his allies defend Earth against an onslaught of intergalactic villains with ever-increasing power.',poster:'https://image.tmdb.org/t/p/w500/6VKOfMqTl3TSmmVIFMEqRnSPoaU.jpg',backdrop:'https://image.tmdb.org/t/p/original/iYCRBVYMJvU7ZHEAqrJOl4bHBxS.jpg',trailer:'dFRjUMTnLfw',episodes:291,seasons:9,tags:['must-watch','top-rated'],dateAdded:'2024-04-26'},
+{id:'a27',title:'Boruto: Naruto Next Generations',type:'anime',year:2017,rating:6.8,genre:'action',description:'The son of Naruto Uzumaki strives to forge his own ninja way in a new era of peace.',poster:'https://image.tmdb.org/t/p/w500/hJNsGDnZ3k3cJvhN3K9UVAXxGXQ.jpg',backdrop:'https://image.tmdb.org/t/p/original/pFDnAqiX8hSVUn10Pvdya4WIi4L.jpg',trailer:'4iHOE2YoHWE',episodes:293,seasons:1,tags:['trending'],dateAdded:'2024-04-27'},
+{id:'a28',title:'Cowboy Bebop',type:'anime',year:1998,rating:8.9,genre:'sci-fi',description:'A ragtag crew of bounty hunters chase criminals across the solar system in their ship, the Bebop.',poster:'https://image.tmdb.org/t/p/w500/yGIoHo7jff8JcHj7Ixp8xDV7NIM.jpg',backdrop:'https://image.tmdb.org/t/p/original/8bcoRX3hQRHzXHGo2v1pBRMQOC.jpg',trailer:'qig4KOK2R2g',episodes:26,seasons:1,tags:['must-watch','top-rated'],dateAdded:'2024-04-28'},
+{id:'a29',title:'Steins;Gate',type:'anime',year:2011,rating:9.0,genre:'sci-fi',description:'A self-proclaimed mad scientist discovers time travel through microwaving bananas and sending text messages to the past.',poster:'https://image.tmdb.org/t/p/w500/nWKnqfPn1jCqHLwgNCuzLSNeuqQ.jpg',backdrop:'https://image.tmdb.org/t/p/original/3DNBkS5798cGMhXJQH7qOjHRXc9.jpg',trailer:'27OZc-ku6is',episodes:24,seasons:1,tags:['must-watch','top-rated'],dateAdded:'2024-04-29'}
+
 ];
 
-// ═══════ INITIALIZE DATA ═══════
 function initializeData() {
     if (!localStorage.getItem(STORAGE_KEYS.CONTENT)) {
         localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(SAMPLE_CONTENT));
     }
-    if (!localStorage.getItem(STORAGE_KEYS.WATCHLIST)) {
-        localStorage.setItem(STORAGE_KEYS.WATCHLIST, JSON.stringify([]));
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.FAVORITES)) {
-        localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify([]));
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.FRIENDS)) {
-        localStorage.setItem(STORAGE_KEYS.FRIENDS, JSON.stringify([]));
-    }
-    if (!localStorage.getItem(STORAGE_KEYS.USER)) {
-        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify({ name: 'PriismaTv User', avatar: 'P' }));
-    }
+    if (!localStorage.getItem(STORAGE_KEYS.WATCHLIST)) localStorage.setItem(STORAGE_KEYS.WATCHLIST, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE_KEYS.FAVORITES)) localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE_KEYS.FRIENDS)) localStorage.setItem(STORAGE_KEYS.FRIENDS, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE_KEYS.USER)) localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify({name:'PriismaTv User',avatar:'P'}));
 }
-
 initializeData();
