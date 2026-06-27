@@ -488,17 +488,16 @@ class PriismaTv {
         // Delete button
         document.getElementById('modalDelete').onclick = () => this.deleteItem(item);
 
-        // Trailer button - always works by searching YouTube
+        // Trailer button - always works by searching YouTube in 4K
         const trailerBtn = document.getElementById('modalTrailer');
         trailerBtn.style.display = 'inline-flex';
         trailerBtn.onclick = () => {
             const isAnime = item.type === 'anime';
             const searchTerm = isAnime 
-                ? `${item.title} anime official trailer` 
-                : `${item.title} ${item.year || ''} official trailer HD`;
+                ? `${item.title} anime official trailer 4K` 
+                : `${item.title} ${item.year || ''} official trailer 4K HDR`;
             const query = encodeURIComponent(searchTerm);
             
-            // Try saved trailer ID first, fallback to YouTube search
             if (item.trailer && item.trailer.length === 11) {
                 this.playTrailer(item.trailer, query);
             } else {
@@ -897,10 +896,10 @@ class PriismaTv {
         
         let embedUrl;
         if (trailerId) {
-            embedUrl = `https://www.youtube.com/embed/${trailerId}?autoplay=1&rel=0&modestbranding=1&hd=1`;
+            embedUrl = `https://www.youtube.com/embed/${trailerId}?autoplay=1&rel=0&modestbranding=1&vq=hd2160`;
         } else if (searchQuery) {
-            // YouTube search embed - plays first matching result
-            embedUrl = `https://www.youtube.com/embed?listType=search&list=${searchQuery}`;
+            // YouTube search embed - plays first matching result in highest quality
+            embedUrl = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&vq=hd2160`;
         }
         
         if (embedUrl) {
