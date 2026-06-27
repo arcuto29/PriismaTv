@@ -828,7 +828,7 @@ class PriismaTv {
         this.closeModal();
     }
 
-    // Embed sources - 1080p HD priority ordering
+    // Embed sources - only keeping servers that ACTUALLY WORK
     getEmbedSources(imdbId, type, season = 1, episode = 1) {
         const isMovie = type === 'movie';
         const s = season;
@@ -836,21 +836,17 @@ class PriismaTv {
 
         if (isMovie) {
             return [
-                { name: '1080p Server 1', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&quality=1080p` },
-                { name: '1080p Server 2', url: `https://autoembed.co/movie/imdb/${imdbId}` },
-                { name: '1080p Server 3', url: `https://vidsrc.me/embed/movie?imdb=${imdbId}` },
-                { name: 'HD Server 4', url: `https://2embed.cc/embed/${imdbId}` },
-                { name: 'HD Server 5', url: `https://vidsrc.io/embed/movie/${imdbId}` },
+                { name: 'Server 1', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&quality=1080p` },
+                { name: 'Server 2', url: `https://autoembed.co/movie/imdb/${imdbId}` },
+                { name: 'Server 3', url: `https://www.2embed.cc/embed/${imdbId}` },
             ];
         }
 
         // TV Shows & Anime
         return [
-            { name: '1080p Server 1', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}&quality=1080p` },
-            { name: '1080p Server 2', url: `https://autoembed.co/tv/imdb/${imdbId}-${s}-${e}` },
-            { name: '1080p Server 3', url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}` },
-            { name: 'HD Server 4', url: `https://2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
-            { name: 'HD Server 5', url: `https://vidsrc.io/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 1', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}&quality=1080p` },
+            { name: 'Server 2', url: `https://autoembed.co/tv/imdb/${imdbId}-${s}-${e}` },
+            { name: 'Server 3', url: `https://www.2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
         ];
     }
 
