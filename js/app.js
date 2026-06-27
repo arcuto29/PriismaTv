@@ -1589,45 +1589,123 @@ class PriismaTv {
 
     generateQuizQuestions() {
         const questions = [];
-        const items = this.content.filter(c => c.year && c.rating);
-        
-        for (let i = 0; i < 20 && i < items.length; i++) {
-            const item = items[Math.floor(Math.random() * items.length)];
-            const wrongYears = [item.year - 2, item.year + 1, item.year - 3].filter(y => y > 1980);
+        const movies = this.content.filter(c => c.type === 'movie' && c.year && c.rating);
+        const anime = this.content.filter(c => c.type === 'anime' && c.episodes);
+        const tvshows = this.content.filter(c => c.type === 'tvshow' && c.seasons);
+        const all = this.content.filter(c => c.year && c.rating);
+
+        // Movie questions
+        for (let i = 0; i < 10 && i < movies.length; i++) {
+            const item = movies[Math.floor(Math.random() * movies.length)];
+            const others = movies.filter(m => m.id !== item.id);
             
-            // Year question
             questions.push({
-                question: `What year was "${item.title}" released?`,
-                options: this.shuffle([item.year.toString(), ...wrongYears.slice(0, 3).map(String)]),
+                question: `What year was the movie "${item.title}" released?`,
+                options: this.shuffle([item.year.toString(), ...[item.year - 2, item.year + 1, item.year - 4].map(String)]),
                 correct: 0
             });
-            // Fix correct index after shuffle
-            const yearQ = questions[questions.length - 1];
-            yearQ.correct = yearQ.options.indexOf(item.year.toString());
+            questions[questions.length - 1].correct = questions[questions.length - 1].options.indexOf(item.year.toString());
 
-            // Rating question
-            const wrongRatings = [(item.rating - 1.2).toFixed(1), (item.rating + 0.8).toFixed(1), (item.rating - 0.5).toFixed(1)];
-            questions.push({
-                question: `What is the rating of "${item.title}"?`,
-                options: this.shuffle([item.rating.toString(), ...wrongRatings]),
-                correct: 0
-            });
-            const ratQ = questions[questions.length - 1];
-            ratQ.correct = ratQ.options.indexOf(item.rating.toString());
-
-            // Type question
-            if (item.genre) {
-                const wrongGenres = ['action', 'comedy', 'horror', 'romance', 'sci-fi', 'drama'].filter(g => g !== item.genre).slice(0, 3);
+            if (item.genre && others.length >= 3) {
                 questions.push({
                     question: `What genre is "${item.title}"?`,
-                    options: this.shuffle([this.capitalizeFirst(item.genre), ...wrongGenres.map(g => this.capitalizeFirst(g))]),
+                    options: this.shuffle([this.capitalizeFirst(item.genre), ...others.slice(0, 3).map(o => this.capitalizeFirst(o.genre))].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4)),
                     correct: 0
                 });
-                const genQ = questions[questions.length - 1];
-                genQ.correct = genQ.options.indexOf(this.capitalizeFirst(item.genre));
+                questions[questions.length - 1].correct = questions[questions.length - 1].options.indexOf(this.capitalizeFirst(item.genre));
+            }
+
+            if (item.duration) {
+                questions.push({
+                    question: `How long is "${item.title}"?`,
+                    options: this.shuffle([item.duration, '1h 45m', '2h 15m', '3h 2m']),
+                    correct: 0
+                });
+                questions[questions.length - 1].correct = questions[questions.length - 1].options.indexOf(item.duration);
             }
         }
-        return questions;
+
+        // Anime questions
+        for (let i = 0; i < 10 && i < anime.length; i++) {
+            const item = anime[Math.floor(Math.random() * anime.length)];
+
+            questions.push({
+                question: `How many episodes does "${item.title}" have?`,
+                options: this.shuffle([item.episodes.toString(), (item.episodes + 12).toString(), (item.episodes - 8).toString(), (item.episodes + 50).toString()]),
+                correct: 0
+            });
+            questions[questions.length - 1].correct = questions[questions.length - 1].options.indexOf(item.episodes.toString());
+
+            if (item.seasons) {
+                questions.push({
+                    question: `How many seasons does "${item.title}" have?`,
+                    options: this.shuffle([item.seasons.toString(), (item.seasons + 1).toString(), (item.seasons + 3).toString(), Math.max(1, item.seasons - 1).toString()]),
+                    correct: 0
+                });
+                questions[questions.length - 1].correct = questions[questions.length - 1].options.indexOf(item.seasons.toString());
+            }
+
+            questions.push({
+                question: `What year did "${item.title}" first air?`,
+                options: this.shuffle([item.year.toString(), (item.year - 2).toString(), (item.year + 3).toString(), (item.year - 5).toString()]),
+                correct: 0
+            });
+            questions[questions.length - 1].correct = questions[questions.length - 1].options.indexOf(item.year.toString());
+        }
+
+        // TV Show questions
+        for (let i = 0; i < 10 && i < tvshows.length; i++) {
+            const item = tvshows[Math.floor(Math.random() * tvshows.length)];
+
+            questions.push({
+                question: `How many seasons does "${item.title}" have?`,
+                options: this.shuffle([item.seasons.toString(), (item.seasons + 2).toString(), (item.seasons - 1 || 1).toString(), (item.seasons + 4).toString()]),
+                correct: 0
+            });
+            questions[questions.length - 1].correct = questions[questions.length - 1].options.indexOf(item.seasons.toString());
+
+            questions.push({
+                question: `What genre is "${item.title}"?`,
+                options: this.shuffle([this.capitalizeFirst(item.genre), 'Comedy', 'Horror', 'Romance'].filter((v, i, a) => a.indexOf(v) === i).slice(0, 4)),
+                correct: 0
+            });
+            questions[questions.length - 1].correct = questions[questions.length - 1].options.indexOf(this.capitalizeFirst(item.genre));
+
+            questions.push({
+                question: `What is the rating of "${item.title}"?`,
+                options: this.shuffle([item.rating.toString(), (item.rating - 1.2).toFixed(1), (item.rating + 0.6).toFixed(1), (item.rating - 0.4).toFixed(1)]),
+                correct: 0
+            });
+            questions[questions.length - 1].correct = questions[questions.length - 1].options.indexOf(item.rating.toString());
+        }
+
+        // Comparison questions (which is higher rated?)
+        for (let i = 0; i < 5 && all.length >= 2; i++) {
+            const a = all[Math.floor(Math.random() * all.length)];
+            let b = all[Math.floor(Math.random() * all.length)];
+            while (b.id === a.id) b = all[Math.floor(Math.random() * all.length)];
+            const higher = a.rating >= b.rating ? a : b;
+
+            questions.push({
+                question: `Which has a higher rating: "${a.title}" or "${b.title}"?`,
+                options: [a.title, b.title],
+                correct: a.title === higher.title ? 0 : 1
+            });
+        }
+
+        // "Which one is a ___?" questions
+        if (movies.length > 0 && anime.length > 0) {
+            const movie = movies[Math.floor(Math.random() * movies.length)];
+            const animeItem = anime[Math.floor(Math.random() * anime.length)];
+            questions.push({
+                question: `Which one is an anime?`,
+                options: this.shuffle([animeItem.title, movie.title]),
+                correct: 0
+            });
+            questions[questions.length - 1].correct = questions[questions.length - 1].options.indexOf(animeItem.title);
+        }
+
+        return questions.filter(q => q.options.length >= 2 && q.correct >= 0 && q.correct < q.options.length);
     }
 
     shuffle(arr) {
