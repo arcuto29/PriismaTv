@@ -1244,20 +1244,40 @@ class PriismaTv {
 
     // ═══════ YOUTUBE ═══════
     initYouTube() {
-        document.getElementById('ytSearchBtn').onclick = () => this.searchYouTube();
+        document.getElementById('ytPlayBtn').addEventListener('click', () => this.playYouTube());
+        document.getElementById('ytSearchBtn').addEventListener('click', () => this.searchYouTube());
         document.getElementById('ytSearchInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') this.searchYouTube();
+            if (e.key === 'Enter') this.playYouTube();
         });
+    }
+
+    playYouTube() {
+        const input = document.getElementById('ytSearchInput').value.trim();
+        if (!input) { this.showToast('Paste a YouTube URL', 'error'); return; }
+        
+        // Extract video ID from various YouTube URL formats
+        let videoId = null;
+        if (this.isYouTubeUrl(input)) {
+            videoId = this.getYouTubeId(input);
+        } else if (input.length === 11 && /^[a-zA-Z0-9_-]+$/.test(input)) {
+            // It's just a video ID
+            videoId = input;
+        }
+        
+        if (videoId) {
+            document.getElementById('ytFrame').src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+            this.showToast('Playing video!', 'success');
+        } else {
+            // Not a valid URL, search YouTube in new tab
+            this.searchYouTube();
+        }
     }
 
     searchYouTube() {
         const query = document.getElementById('ytSearchInput').value.trim();
-        if (!query) return;
-        // Load YouTube search results page embedded
-        const encoded = encodeURIComponent(query);
-        document.getElementById('ytFrame').src = `https://www.youtube.com/embed?listType=search&list=${encoded}`;
-        // Also open YouTube search in the embed
-        this.showToast('Searching YouTube...', 'info');
+        if (!query) { this.showToast('Enter something to search', 'error'); return; }
+        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
+        this.showToast('Opening YouTube search...', 'info');
     }
 
     // ═══════ TWITCH ═══════

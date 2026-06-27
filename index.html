@@ -449,16 +449,20 @@
                     <h1><i class="fab fa-youtube" style="color:#ff0000;"></i> YouTube</h1>
                 </div>
                 <div style="padding:0 50px 50px;">
-                    <div style="display:flex;gap:12px;margin-bottom:24px;">
-                        <input type="text" id="ytSearchInput" placeholder="Search YouTube..." style="flex:1;padding:13px 18px;background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:var(--radius-full);color:var(--text-primary);font-family:inherit;outline:none;">
-                        <button class="btn btn-primary" id="ytSearchBtn"><i class="fas fa-search"></i> Search</button>
+                    <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
+                        <input type="text" id="ytSearchInput" placeholder="Paste a YouTube video URL or search term..." style="flex:1;min-width:200px;padding:13px 18px;background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:var(--radius-full);color:var(--text-primary);font-family:inherit;outline:none;">
+                        <button class="btn btn-primary" id="ytPlayBtn"><i class="fas fa-play"></i> Play</button>
+                        <button class="btn btn-secondary" id="ytSearchBtn"><i class="fas fa-search"></i> Search YouTube</button>
                     </div>
                     <div id="ytPlayerContainer" style="width:100%;aspect-ratio:16/9;background:#000;border-radius:var(--radius-xl);overflow:hidden;margin-bottom:24px;">
-                        <iframe id="ytFrame" src="https://www.youtube.com/embed/" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>
+                        <iframe id="ytFrame" src="" frameborder="0" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>
                     </div>
-                    <div class="yt-quick-links" style="display:flex;gap:10px;flex-wrap:wrap;">
-                        <button class="btn btn-secondary btn-small" onclick="document.getElementById('ytFrame').src='https://www.youtube.com/embed/dQw4w9WgXcQ'"><i class="fas fa-music"></i> Music</button>
+                    <p style="color:var(--text-muted);font-size:0.82rem;margin-bottom:16px;">Paste any YouTube URL (e.g. https://youtube.com/watch?v=xxxx) and click Play. Or search to open YouTube in a new tab.</p>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
                         <button class="btn btn-secondary btn-small" onclick="window.open('https://www.youtube.com','_blank')"><i class="fab fa-youtube"></i> Open YouTube</button>
+                        <button class="btn btn-secondary btn-small" onclick="window.open('https://www.youtube.com/feed/trending','_blank')"><i class="fas fa-fire"></i> Trending</button>
+                        <button class="btn btn-secondary btn-small" onclick="window.open('https://www.youtube.com/gaming','_blank')"><i class="fas fa-gamepad"></i> Gaming</button>
+                        <button class="btn btn-secondary btn-small" onclick="window.open('https://music.youtube.com','_blank')"><i class="fas fa-music"></i> Music</button>
                     </div>
                 </div>
             </section>
