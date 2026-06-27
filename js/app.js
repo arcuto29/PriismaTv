@@ -54,6 +54,9 @@ class PriismaTv {
             case 'movies': this.renderMovies(); break;
             case 'anime': this.renderAnime(); break;
             case 'tvshows': this.renderTVShows(); break;
+            case 'watchtogether': this.initWatchTogether(); break;
+            case 'youtube': this.initYouTube(); break;
+            case 'twitch': this.initTwitch(); break;
             case 'watchlist': this.renderWatchlist(); break;
             case 'favorites': this.renderFavorites(); break;
             case 'friends': this.renderFriends(); break;
@@ -566,7 +569,7 @@ class PriismaTv {
         this.closeModal();
     }
 
-    // Embed sources - using BOTH IMDB and TMDB IDs for maximum compatibility
+    // Embed sources - ONLY the ones that actually work
     getEmbedSources(imdbId, type, season = 1, episode = 1) {
         const isMovie = type === 'movie';
         const tmdbId = this.currentDetailItem?.tmdbId || '';
@@ -575,21 +578,17 @@ class PriismaTv {
 
         if (isMovie) {
             return [
-                { name: 'Server 1', url: `https://player.autoembed.cc/embed/movie/${imdbId}` },
+                { name: 'Server 1 (Best)', url: `https://player.autoembed.cc/embed/movie/${imdbId}` },
                 { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` },
-                { name: 'Server 3', url: `https://vidsrc.in/embed/movie/${imdbId}` },
-                { name: 'Server 4', url: tmdbId ? `https://vidsrc.wiki/embed/movie/${tmdbId}` : `https://vidsrc.wiki/embed/movie/${imdbId}` },
-                { name: 'Server 5', url: `https://vidsrc.mov/embed/movie/${imdbId}` },
+                { name: 'Server 3', url: `https://moviesapi.club/movie/${imdbId}` },
             ];
         }
 
         // TV Shows & Anime - with season/episode
         return [
-            { name: 'Server 1', url: `https://player.autoembed.cc/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 1 (Best)', url: `https://player.autoembed.cc/embed/tv/${imdbId}/${s}/${e}` },
             { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}` },
-            { name: 'Server 3', url: `https://vidsrc.in/embed/tv/${imdbId}/${s}/${e}` },
-            { name: 'Server 4', url: tmdbId ? `https://vidsrc.wiki/embed/tv/${tmdbId}/${s}/${e}` : `https://vidsrc.wiki/embed/tv/${imdbId}/${s}/${e}` },
-            { name: 'Server 5', url: `https://vidsrc.mov/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 3', url: `https://moviesapi.club/tv/${imdbId}/${s}/${e}` },
         ];
     }
 
@@ -1125,6 +1124,94 @@ class PriismaTv {
         }
     }
 
+
+    // ═══════ WATCH TOGETHER ═══════
+    initWatchTogether() {
+        document.getElementById('createRoomBtn').onclick = () => this.createRoom();
+        document.getElementById('joinRoomBtn').onclick = () => this.joinRoom();
+        document.getElementById('copyRoomCode').onclick = () => this.copyRoomCodeFn();
+        document.getElementById('wtLoadVideo').onclick = () => this.loadWTVideo();
+    }
+
+    createRoom() {
+        const code = 'PT-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+        document.getElementById('roomStatus').style.display = 'block';
+        document.getElementById('roomCodeDisplay').textContent = code;
+        this.currentRoomCode = code;
+        this.showToast(`Room created! Code: ${code}`, 'success');
+    }
+
+    joinRoom() {
+        const code = document.getElementById('joinRoomCode').value.trim();
+        if (!code) { this.showToast('Enter a room code', 'error'); return; }
+        document.getElementById('roomStatus').style.display = 'block';
+        document.getElementById('roomCodeDisplay').textContent = code;
+        this.currentRoomCode = code;
+        this.showToast(`Joined room: ${code}`, 'success');
+    }
+
+    copyRoomCodeFn() {
+        if (this.currentRoomCode) {
+            this.copyToClipboard(this.currentRoomCode);
+            this.showToast('Room code copied!', 'success');
+        }
+    }
+
+    loadWTVideo() {
+        const url = document.getElementById('wtVideoUrl').value.trim();
+        if (!url) { this.showToast('Paste a video URL', 'error'); return; }
+        const player = document.getElementById('wtPlayer');
+        
+        if (this.isYouTubeUrl(url)) {
+            const videoId = this.getYouTubeId(url);
+            player.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>`;
+        } else if (/twitch\.tv/i.test(url)) {
+            const channel = url.split('/').pop();
+            player.innerHTML = `<iframe src="https://player.twitch.tv/?channel=${channel}&parent=${location.hostname}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>`;
+        } else {
+            player.innerHTML = `<iframe src="${url}" frameborder="0" allow="autoplay; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>`;
+        }
+        this.showToast('Video loaded! Share the room code with friends.', 'success');
+    }
+
+    // ═══════ YOUTUBE ═══════
+    initYouTube() {
+        document.getElementById('ytSearchBtn').onclick = () => this.searchYouTube();
+        document.getElementById('ytSearchInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.searchYouTube();
+        });
+    }
+
+    searchYouTube() {
+        const query = document.getElementById('ytSearchInput').value.trim();
+        if (!query) return;
+        // Load YouTube search results page embedded
+        const encoded = encodeURIComponent(query);
+        document.getElementById('ytFrame').src = `https://www.youtube.com/embed?listType=search&list=${encoded}`;
+        // Also open YouTube search in the embed
+        this.showToast('Searching YouTube...', 'info');
+    }
+
+    // ═══════ TWITCH ═══════
+    initTwitch() {
+        document.getElementById('twitchLoadBtn').onclick = () => {
+            const channel = document.getElementById('twitchChannel').value.trim();
+            if (channel) this.loadTwitch(channel);
+        };
+        document.getElementById('twitchChannel').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const channel = document.getElementById('twitchChannel').value.trim();
+                if (channel) this.loadTwitch(channel);
+            }
+        });
+    }
+
+    loadTwitch(channel) {
+        const hostname = location.hostname || 'localhost';
+        document.getElementById('twitchFrame').src = `https://player.twitch.tv/?channel=${channel}&parent=${hostname}`;
+        document.getElementById('twitchChannel').value = channel;
+        this.showToast(`Loading ${channel}'s stream...`, 'info');
+    }
 
     // ═══════ WATCHLIST & FAVORITES ═══════
     toggleWatchlist(id) {
