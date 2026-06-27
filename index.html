@@ -86,6 +86,7 @@
                     <video class="hero-video-bg" autoplay muted loop playsinline>
                         <source src="jinwoo-bg.mp4" type="video/mp4">
                     </video>
+                    <div class="fog-layer"></div>
                     <div class="hero-backdrop" id="heroBackdrop"></div>
                     <div class="hero-content">
                         <span class="hero-badge"><i class="fas fa-crown"></i> Featured</span>
@@ -694,6 +695,35 @@
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
+    </script>
+    <script>
+    // ═══════ CURSOR LIGHT EFFECT ═══════
+    (function() {
+        const light = document.createElement('div');
+        light.className = 'cursor-light';
+        document.body.appendChild(light);
+        document.addEventListener('mousemove', (e) => {
+            light.style.left = e.clientX + 'px';
+            light.style.top = e.clientY + 'px';
+        });
+    })();
+
+    // ═══════ HERO PARALLAX ON MOUSE MOVE ═══════
+    (function() {
+        const hero = document.querySelector('.hero');
+        const video = document.querySelector('.hero-video-bg');
+        if (hero && video) {
+            hero.addEventListener('mousemove', (e) => {
+                const rect = hero.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width - 0.5;
+                const y = (e.clientY - rect.top) / rect.height - 0.5;
+                video.style.transform = `scale(1.1) translate(${x * -15}px, ${y * -10}px)`;
+            });
+            hero.addEventListener('mouseleave', () => {
+                video.style.transform = 'scale(1.1) translate(0, 0)';
+            });
+        }
+    })();
     </script>
     <script>
     // ═══════ ANIMATED STARS BACKGROUND ═══════
