@@ -795,6 +795,34 @@ body {
     box-shadow: 0 0 8px rgba(0,212,255,0.3);
 }
 
+.dub-sub-toggle {
+    display: flex; gap: 4px; margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255,255,255,0.15);
+}
+.dub-btn {
+    padding: 6px 12px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    letter-spacing: 0.5px;
+}
+.dub-btn:hover {
+    border-color: var(--accent-primary);
+    color: white;
+}
+.dub-btn.active {
+    background: var(--accent-gradient);
+    color: white;
+    border-color: transparent;
+}
+
 /* ═══════ RESPONSIVE ═══════ */
 @media (max-width: 1200px) {
     .admin-container { grid-template-columns: 1fr; }

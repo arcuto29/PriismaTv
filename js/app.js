@@ -488,15 +488,20 @@ class PriismaTv {
         // Delete button
         document.getElementById('modalDelete').onclick = () => this.deleteItem(item);
 
-        // Trailer button - opens YouTube trailer directly
+        // Trailer button - always works by searching YouTube
         const trailerBtn = document.getElementById('modalTrailer');
         trailerBtn.style.display = 'inline-flex';
         trailerBtn.onclick = () => {
-            if (item.trailer) {
-                this.playTrailer(item.trailer);
+            const isAnime = item.type === 'anime';
+            const searchTerm = isAnime 
+                ? `${item.title} anime official trailer` 
+                : `${item.title} ${item.year || ''} official trailer HD`;
+            const query = encodeURIComponent(searchTerm);
+            
+            // Try saved trailer ID first, fallback to YouTube search
+            if (item.trailer && item.trailer.length === 11) {
+                this.playTrailer(item.trailer, query);
             } else {
-                // Search YouTube for the trailer
-                const query = encodeURIComponent(`${item.title} ${item.year || ''} official trailer HD`);
                 this.playTrailer(null, query);
             }
         };
@@ -580,6 +585,7 @@ class PriismaTv {
         if (imdbId) {
             const sources = this.getEmbedSources(imdbId, type);
             const isShow = (type === 'tv' || this.currentDetailItem?.type === 'anime' || this.currentDetailItem?.type === 'tvshow');
+            const isAnime = this.currentDetailItem?.type === 'anime';
             
             // Season/Episode selector for TV shows and anime
             let episodeBar = '';
@@ -598,9 +604,20 @@ class PriismaTv {
                 `;
             }
 
+            // Dubbed/Subbed toggle for anime
+            let dubSubBar = '';
+            if (isAnime) {
+                dubSubBar = `
+                    <div class="dub-sub-toggle" id="dubSubToggle">
+                        <button class="dub-btn active" onclick="app.switchAudioTrack('sub', this)">SUB</button>
+                        <button class="dub-btn" onclick="app.switchAudioTrack('dub', this)">DUB</button>
+                    </div>
+                `;
+            }
+
             sourceBar.innerHTML = sources.map((s, i) => 
                 `<button class="${i === 0 ? 'active' : ''}" onclick="app.switchSource('${s.url}', this)">${s.name}</button>`
-            ).join('') + episodeBar;
+            ).join('') + episodeBar + dubSubBar;
             sourceBar.style.display = 'flex';
             
             // Store current IMDB for episode changes
@@ -627,7 +644,7 @@ class PriismaTv {
     }
 
     // Embed sources - CONFIRMED WORKING as of 2025
-    getEmbedSources(imdbId, type, season = 1, episode = 1) {
+    getEmbedSources(imdbId, type, season = 1, episode = 1, audioTrack = 'sub') {
         const isMovie = type === 'movie';
         const s = season;
         const e = episode;
@@ -643,6 +660,17 @@ class PriismaTv {
         }
 
         // TV Shows & Anime
+        // For dubbed anime, use different server params where available
+        if (audioTrack === 'dub') {
+            return [
+                { name: 'Server 1 (Dub)', url: `https://autoembed.co/tv/imdb/${imdbId}-${s}-${e}` },
+                { name: 'Server 2 (Dub)', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}&lang=eng` },
+                { name: 'Server 3 (Dub)', url: `https://2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
+                { name: 'Server 4 (Dub)', url: `https://vidsrc.io/embed/tv/${imdbId}/${s}/${e}` },
+                { name: 'Server 5 (Dub)', url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}&ds_lang=en` },
+            ];
+        }
+
         return [
             { name: 'Server 1', url: `https://autoembed.co/tv/imdb/${imdbId}-${s}-${e}` },
             { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}` },
@@ -678,7 +706,7 @@ class PriismaTv {
         
         // Update source bar buttons
         const sourceBar = document.getElementById('videoSourceBar');
-        const buttons = sourceBar.querySelectorAll('button');
+        const buttons = sourceBar.querySelectorAll('button:not(.dub-btn)');
         buttons.forEach((btn, i) => {
             if (sources[i]) {
                 btn.onclick = () => this.switchSource(sources[i].url, btn);
@@ -692,6 +720,39 @@ class PriismaTv {
         // Mark first button active
         buttons.forEach(b => b.classList.remove('active'));
         if (buttons[0]) buttons[0].classList.add('active');
+    }
+
+    // Switch between dubbed and subbed for anime
+    switchAudioTrack(track, btn) {
+        // Update button states
+        document.querySelectorAll('.dub-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        this.currentAudioTrack = track;
+        const imdbId = this.currentImdbId;
+        const season = document.getElementById('seasonSelect')?.value || 1;
+        const episode = document.getElementById('episodeSelect')?.value || 1;
+
+        // Get sources for the selected audio track
+        const sources = this.getEmbedSources(imdbId, 'tv', season, episode, track);
+
+        // Update source bar buttons
+        const sourceBar = document.getElementById('videoSourceBar');
+        const buttons = sourceBar.querySelectorAll('button:not(.dub-btn)');
+        buttons.forEach((btn, i) => {
+            if (sources[i]) {
+                btn.onclick = () => this.switchSource(sources[i].url, btn);
+            }
+        });
+
+        // Load first source with new audio track
+        const playerContent = document.getElementById('videoPlayerContent');
+        playerContent.innerHTML = `<iframe src="${sources[0].url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen scrolling="no" referrerpolicy="origin" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
+        
+        buttons.forEach(b => b.classList.remove('active'));
+        if (buttons[0]) buttons[0].classList.add('active');
+
+        this.showToast(`Switched to ${track === 'dub' ? 'English Dubbed' : 'Japanese Subbed'}`, 'info');
     }
 
     // Auto-find streaming link when no video URL is saved
@@ -820,18 +881,25 @@ class PriismaTv {
         const playerContent = document.getElementById('videoPlayerContent');
         const sourceBar = document.getElementById('videoSourceBar');
         
-        sourceBar.innerHTML = '<button class="active" style="pointer-events:none;"><i class="fas fa-video"></i> Trailer</button>';
+        // Show trailer bar with option to search YouTube if embed fails
+        const searchUrl = searchQuery ? `https://www.youtube.com/results?search_query=${searchQuery}` : '';
+        sourceBar.innerHTML = `
+            <button class="active" style="pointer-events:none;"><i class="fas fa-video"></i> Trailer</button>
+            ${searchQuery ? `<button onclick="window.open('${searchUrl}','_blank')"><i class="fab fa-youtube"></i> Open on YouTube</button>` : ''}
+        `;
         sourceBar.style.display = 'flex';
         
         let embedUrl;
         if (trailerId) {
             embedUrl = `https://www.youtube.com/embed/${trailerId}?autoplay=1&rel=0&modestbranding=1&hd=1`;
         } else if (searchQuery) {
-            // Use YouTube's search embed - plays first result
+            // YouTube search embed - plays first matching result
             embedUrl = `https://www.youtube.com/embed?listType=search&list=${searchQuery}`;
         }
         
-        playerContent.innerHTML = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
+        if (embedUrl) {
+            playerContent.innerHTML = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
+        }
         
         playerContainer.classList.add('active');
         document.body.style.overflow = 'hidden';
