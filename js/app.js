@@ -547,6 +547,34 @@ class PriismaTv {
     // ═══════ VIDEO PLAYER ═══════
     bindVideoPlayer() {
         document.getElementById('videoPlayerClose').addEventListener('click', () => this.closeVideoPlayer());
+        document.getElementById('videoPlayerFullscreen').addEventListener('click', () => this.toggleFullscreen());
+    }
+
+    toggleFullscreen() {
+        const player = document.getElementById('videoPlayer');
+        const content = document.getElementById('videoPlayerContent');
+        const iframe = content.querySelector('iframe');
+        
+        // Try to fullscreen the iframe first (best experience)
+        const target = iframe || content;
+        
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (target.requestFullscreen) {
+                target.requestFullscreen();
+            } else if (target.webkitRequestFullscreen) {
+                target.webkitRequestFullscreen();
+            } else if (target.msRequestFullscreen) {
+                target.msRequestFullscreen();
+            } else if (player.requestFullscreen) {
+                player.requestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
     }
 
     playContent(item) {
