@@ -1141,15 +1141,23 @@ body.light-mode .hero-video-bg {
     display: none;
 }
 body.light-mode .hero {
+    background-color: #000000;
     background-image: url('../sung-jinwoo-vs-ant-king-sung-jingwoo-vs-beru.gif');
     background-size: cover;
     background-position: center;
 }
 body.light-mode .hero::after {
-    background: linear-gradient(to top, var(--bg-primary) 0%, rgba(245,245,250,0.85) 25%, rgba(245,245,250,0.4) 55%, transparent 100%);
+    background: linear-gradient(to top, var(--bg-primary) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.3) 60%, transparent 100%);
 }
 body.light-mode .hero::before {
-    background: linear-gradient(90deg, rgba(245,245,250,0.95) 0%, rgba(245,245,250,0.5) 40%, transparent 70%);
+    background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 40%, transparent 70%);
+}
+body.light-mode .hero-content h1 {
+    background: linear-gradient(to right, #ffffff 0%, #ffffff 20%, #00d4ff 30%, #6c5ce7 40%, #00d4ff 50%, #ffffff 60%, #ffffff 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 body.light-mode .hero-content h1 {
     background: linear-gradient(110deg, #1a1a2e 0%, #1a1a2e 35%, #00d4ff 45%, #6c5ce7 55%, #1a1a2e 65%, #1a1a2e 100%);
