@@ -22,6 +22,7 @@ class PriismaTv {
         this.bindFriends();
         this.bindVideoPlayer();
         this.bindThemeToggle();
+        this.bindChat();
         this.renderHome();
         this.updateStats();
         this.updateNotifBadge();
@@ -341,6 +342,9 @@ class PriismaTv {
                     <span class="card-type-badge ${item.type}">${this.formatType(item.type)}</span>
                     <div class="card-overlay">
                         <div class="card-overlay-actions">
+                            <button class="play-btn" data-id="${item.id}" title="Watch Now">
+                                <i class="fas fa-play"></i>
+                            </button>
                             <button class="watchlist-btn ${isWatchlist ? 'active' : ''}" data-id="${item.id}" title="${isWatchlist ? 'Remove from Watchlist' : 'Add to Watchlist'}">
                                 <i class="fas fa-bookmark"></i>
                             </button>
@@ -366,9 +370,21 @@ class PriismaTv {
         // Click card to open detail
         container.querySelectorAll('.content-card').forEach(card => {
             card.addEventListener('click', (e) => {
-                if (e.target.closest('.watchlist-btn') || e.target.closest('.favorite-btn')) return;
+                if (e.target.closest('.watchlist-btn') || e.target.closest('.favorite-btn') || e.target.closest('.play-btn')) return;
                 const item = this.content.find(c => c.id === card.dataset.id);
                 if (item) this.openDetail(item);
+            });
+        });
+
+        // Play buttons - watch directly
+        container.querySelectorAll('.play-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const item = this.content.find(c => c.id === btn.dataset.id);
+                if (item) {
+                    this.currentDetailItem = item;
+                    this.playContent(item);
+                }
             });
         });
 
@@ -1257,6 +1273,113 @@ class PriismaTv {
         document.getElementById('twitchFrame').src = `https://player.twitch.tv/?channel=${channel}&parent=${hostname}`;
         document.getElementById('twitchChannel').value = channel;
         this.showToast(`Loading ${channel}'s stream...`, 'info');
+    }
+
+    // ═══════ CHAT SYSTEM ═══════
+    bindChat() {
+        document.getElementById('chatToggle').addEventListener('click', () => {
+            document.getElementById('chatPanel').classList.toggle('active');
+        });
+        document.getElementById('chatClose').addEventListener('click', () => {
+            document.getElementById('chatPanel').classList.remove('active');
+        });
+        document.getElementById('chatJoinBtn').addEventListener('click', () => this.joinChat());
+        document.getElementById('chatSendBtn').addEventListener('click', () => this.sendChatMsg());
+        document.getElementById('chatInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.sendChatMsg();
+        });
+        document.getElementById('chatUsername').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.joinChat();
+        });
+        document.getElementById('chatRoomId').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.joinChat();
+        });
+    }
+
+    joinChat() {
+        const name = document.getElementById('chatUsername').value.trim();
+        const room = document.getElementById('chatRoomId').value.trim();
+        if (!name) { this.showToast('Enter your name', 'error'); return; }
+        if (!room) { this.showToast('Enter a room code', 'error'); return; }
+
+        this.chatUsername = name;
+        this.chatRoom = room;
+        this.chatMessages = JSON.parse(localStorage.getItem(`chat_${room}`)) || [];
+
+        // Enable input
+        document.getElementById('chatInput').disabled = false;
+        document.getElementById('chatSendBtn').disabled = false;
+
+        // Show existing messages
+        this.renderChatMessages();
+
+        // Add join message
+        this.addChatSystemMsg(`${name} joined the chat`);
+        this.showToast(`Joined chat room: ${room}`, 'success');
+
+        // Poll for new messages every 2 seconds (localStorage-based)
+        if (this.chatInterval) clearInterval(this.chatInterval);
+        this.chatInterval = setInterval(() => this.pollChatMessages(), 2000);
+    }
+
+    sendChatMsg() {
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg || !this.chatUsername || !this.chatRoom) return;
+
+        const message = {
+            id: Date.now(),
+            name: this.chatUsername,
+            text: msg,
+            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+        };
+
+        this.chatMessages.push(message);
+        localStorage.setItem(`chat_${this.chatRoom}`, JSON.stringify(this.chatMessages));
+        this.renderChatMessages();
+        input.value = '';
+    }
+
+    pollChatMessages() {
+        if (!this.chatRoom) return;
+        const stored = JSON.parse(localStorage.getItem(`chat_${this.chatRoom}`)) || [];
+        if (stored.length !== this.chatMessages.length) {
+            this.chatMessages = stored;
+            this.renderChatMessages();
+            // Show badge for new messages
+            const badge = document.getElementById('chatBadge');
+            if (!document.getElementById('chatPanel').classList.contains('active')) {
+                badge.classList.add('active');
+                badge.textContent = '!';
+            }
+        }
+    }
+
+    renderChatMessages() {
+        const container = document.getElementById('chatMessages');
+        if (this.chatMessages.length === 0) {
+            container.innerHTML = '<div class="chat-system-msg">No messages yet. Start chatting!</div>';
+            return;
+        }
+        container.innerHTML = this.chatMessages.map(msg => {
+            if (msg.system) {
+                return `<div class="chat-system-msg">${msg.text}</div>`;
+            }
+            const isSent = msg.name === this.chatUsername;
+            return `
+                <div class="chat-msg ${isSent ? 'sent' : 'received'}">
+                    <div class="chat-msg-name">${msg.name} • ${msg.time}</div>
+                    ${msg.text}
+                </div>
+            `;
+        }).join('');
+        container.scrollTop = container.scrollHeight;
+    }
+
+    addChatSystemMsg(text) {
+        this.chatMessages.push({ system: true, text, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) });
+        localStorage.setItem(`chat_${this.chatRoom}`, JSON.stringify(this.chatMessages));
+        this.renderChatMessages();
     }
 
     // ═══════ WATCHLIST & FAVORITES ═══════

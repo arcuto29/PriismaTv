@@ -216,6 +216,7 @@
                         <button class="btn btn-small btn-secondary" id="clearWatchlist"><i class="fas fa-trash"></i> Clear All</button>
                     </div>
                 </div>
+                <p style="color:var(--text-muted);font-size:0.85rem;padding:0 50px 16px;">Click any title to watch it — or hover and use the play button!</p>
                 <div class="content-grid" id="watchlistGrid"></div>
                 <div class="empty-state" id="watchlistEmpty">
                     <i class="fas fa-bookmark"></i>
@@ -522,6 +523,32 @@
 
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Chat Widget -->
+    <div class="chat-widget" id="chatWidget">
+        <button class="chat-toggle" id="chatToggle" title="Chat with friends">
+            <i class="fas fa-comments"></i>
+            <span class="chat-badge" id="chatBadge">0</span>
+        </button>
+        <div class="chat-panel" id="chatPanel">
+            <div class="chat-header">
+                <h4><i class="fas fa-comments"></i> Group Chat</h4>
+                <button class="chat-close" id="chatClose"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="chat-room-bar">
+                <input type="text" id="chatUsername" placeholder="Your name..." value="">
+                <input type="text" id="chatRoomId" placeholder="Room code..." value="">
+                <button class="btn btn-small btn-primary" id="chatJoinBtn">Join</button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="chat-system-msg">Enter a name and room code to start chatting with friends. Share the same room code!</div>
+            </div>
+            <div class="chat-input-bar">
+                <input type="text" id="chatInput" placeholder="Type a message..." disabled>
+                <button class="btn btn-primary btn-small" id="chatSendBtn" disabled><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
 
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
