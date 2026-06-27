@@ -1156,3 +1156,56 @@ body.light-mode .toast {
 body.light-mode .card-type-badge.movie { background: rgba(0, 136, 255, 0.9); }
 body.light-mode .card-type-badge.anime { background: rgba(255, 100, 200, 0.9); }
 body.light-mode .card-type-badge.tvshow { background: rgba(0, 200, 120, 0.9); }
+
+
+/* ═══════ CONTENT SECTION DEPTH ═══════ */
+.content-section:nth-child(odd) {
+    background: linear-gradient(180deg, rgba(0,212,255,0.01) 0%, transparent 100%);
+}
+.content-section:nth-child(even) {
+    background: linear-gradient(180deg, rgba(108,92,231,0.01) 0%, transparent 100%);
+}
+.content-section {
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+    position: relative;
+}
+.content-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.08), transparent);
+}
+
+/* Glass effect on content grids */
+.content-grid {
+    background: rgba(255,255,255,0.01);
+    border-radius: var(--radius-xl);
+    padding: 30px !important;
+    border: 1px solid rgba(255,255,255,0.02);
+}
+
+/* Page backgrounds with subtle gradients */
+#page-movies, #page-anime, #page-tvshows, #page-watchlist, #page-favorites {
+    background: linear-gradient(180deg, transparent 0%, rgba(0,212,255,0.015) 50%, transparent 100%);
+}
+#page-collections, #page-history, #page-challenges {
+    background: linear-gradient(180deg, transparent 0%, rgba(108,92,231,0.015) 50%, transparent 100%);
+}
+
+/* Subtle ambient glow behind section headers */
+.section-header h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px; left: 0;
+    width: 60px; height: 3px;
+    background: var(--accent-gradient);
+    border-radius: 2px;
+    opacity: 0.5;
+}
+.section-header h2 {
+    position: relative;
+    padding-bottom: 12px;
+}
