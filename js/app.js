@@ -511,6 +511,12 @@ class PriismaTv {
         // Delete button
         document.getElementById('modalDelete').onclick = () => this.deleteItem(item);
 
+        // Edit button
+        document.getElementById('modalEdit').onclick = () => this.toggleEditPanel(item);
+        document.getElementById('saveEditBtn').onclick = () => this.saveEdit(item);
+        document.getElementById('cancelEditBtn').onclick = () => { document.getElementById('modalEditPanel').style.display = 'none'; };
+        document.getElementById('autoFetchBtn').onclick = () => this.autoFetchPosterForItem(item);
+
         // Trailer button - always works by searching YouTube in 4K
         const trailerBtn = document.getElementById('modalTrailer');
         trailerBtn.style.display = 'inline-flex';
@@ -564,6 +570,69 @@ class PriismaTv {
         const code = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
         this.copyToClipboard(code);
         this.showToast('Share code copied! Send it to your friends.', 'success');
+    }
+
+    // ═══════ EDIT CONTENT ═══════
+    toggleEditPanel(item) {
+        const panel = document.getElementById('modalEditPanel');
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            document.getElementById('editPoster').value = item.poster || '';
+            document.getElementById('editBackdrop').value = item.backdrop || '';
+            document.getElementById('editTrailer').value = item.trailer || '';
+            document.getElementById('editVideo').value = item.video || '';
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+
+    saveEdit(item) {
+        const newPoster = document.getElementById('editPoster').value.trim();
+        const newBackdrop = document.getElementById('editBackdrop').value.trim();
+        const newTrailer = document.getElementById('editTrailer').value.trim();
+        const newVideo = document.getElementById('editVideo').value.trim();
+
+        // Find and update the item in content array
+        const idx = this.content.findIndex(c => c.id === item.id);
+        if (idx === -1) return;
+
+        if (newPoster) this.content[idx].poster = newPoster;
+        if (newBackdrop) this.content[idx].backdrop = newBackdrop;
+        if (newTrailer) this.content[idx].trailer = newTrailer;
+        if (newVideo) this.content[idx].video = newVideo;
+        this.content[idx].posterVerified = true;
+
+        this.saveContent();
+        document.getElementById('modalEditPanel').style.display = 'none';
+        this.showToast('Saved! Changes will show on refresh.', 'success');
+        
+        // Update the modal poster immediately
+        if (newPoster) {
+            document.getElementById('modalPoster').innerHTML = `<img src="${newPoster}" alt="${item.title}">`;
+        }
+        if (newBackdrop) {
+            document.getElementById('modalBackdrop').style.backgroundImage = `url(${newBackdrop})`;
+        }
+    }
+
+    async autoFetchPosterForItem(item) {
+        const TMDB_API_KEY = '2dca580c2a14b55200e784d157207b4d';
+        this.showToast('Searching TMDB...', 'info');
+        try {
+            const searchType = item.type === 'movie' ? 'movie' : 'tv';
+            const res = await fetch(`https://api.themoviedb.org/3/search/${searchType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(item.title)}&year=${item.year || ''}`);
+            const data = await res.json();
+            if (data.results && data.results.length > 0) {
+                const r = data.results[0];
+                if (r.poster_path) document.getElementById('editPoster').value = `https://image.tmdb.org/t/p/w500${r.poster_path}`;
+                if (r.backdrop_path) document.getElementById('editBackdrop').value = `https://image.tmdb.org/t/p/original${r.backdrop_path}`;
+                this.showToast('Found! Click Save to apply.', 'success');
+            } else {
+                this.showToast('Not found on TMDB. Paste a URL manually.', 'error');
+            }
+        } catch (e) {
+            this.showToast('Fetch failed. Paste a URL manually.', 'error');
+        }
     }
 
 
