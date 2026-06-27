@@ -465,10 +465,14 @@ body {
 
 .card-type-badge {
     position: absolute; top: 10px; left: 10px;
-    padding: 3px 9px; border-radius: 4px;
-    font-size: 0.62rem; font-weight: 700;
-    text-transform: uppercase; backdrop-filter: blur(4px); z-index: 2;
+    padding: 4px 10px; border-radius: 4px;
+    font-size: 0.65rem; font-weight: 700;
+    text-transform: uppercase; backdrop-filter: blur(4px); z-index: 10;
     letter-spacing: 0.5px;
+    transition: opacity 0.3s ease;
+}
+.content-card:hover .card-type-badge {
+    opacity: 1;
 }
 .card-type-badge.movie { background: rgba(0, 136, 255, 0.85); }
 .card-type-badge.anime { background: rgba(255, 100, 200, 0.85); }
