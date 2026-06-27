@@ -592,8 +592,8 @@ class PriismaTv {
 
         const url = this.convertToEmbed(item.video);
         
-        // If it's a Streamtape/Filemoon link, open directly (they block iframe embedding)
-        if (/streamtape\.(com|to)/i.test(url) || /filemoon\.(sx|to|in)/i.test(url)) {
+        // If it's a Streamtape/Filemoon/byse link, open directly (they block iframe embedding)
+        if (/streamtape\.(com|to)/i.test(url) || /filemoon\.(sx|to|in)/i.test(url) || /byselapuix\.com/i.test(url)) {
             window.open(url, '_blank');
             this.showToast('Opening in new tab — plays in full quality there!', 'success');
             return;
