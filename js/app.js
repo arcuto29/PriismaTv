@@ -919,29 +919,22 @@ class PriismaTv {
         const playerContent = document.getElementById('videoPlayerContent');
         const sourceBar = document.getElementById('videoSourceBar');
         
-        // Show trailer bar with option to search YouTube if embed fails
-        const searchUrl = searchQuery ? `https://www.youtube.com/results?search_query=${searchQuery}` : '';
-        sourceBar.innerHTML = `
-            <button class="active" style="pointer-events:none;"><i class="fas fa-video"></i> Trailer</button>
-            ${searchQuery ? `<button onclick="window.open('${searchUrl}','_blank')"><i class="fab fa-youtube"></i> Open on YouTube</button>` : ''}
-        `;
-        sourceBar.style.display = 'flex';
-        
-        let embedUrl;
+        // If we have a trailer ID, embed it directly (most reliable)
         if (trailerId) {
-            embedUrl = `https://www.youtube.com/embed/${trailerId}?autoplay=1&rel=0&modestbranding=1&vq=hd2160`;
+            sourceBar.innerHTML = `
+                <button class="active" style="pointer-events:none;"><i class="fas fa-video"></i> 4K Trailer</button>
+                <button onclick="window.open('https://www.youtube.com/watch?v=${trailerId}','_blank')"><i class="fab fa-youtube"></i> Open on YouTube</button>
+            `;
+            sourceBar.style.display = 'flex';
+            playerContent.innerHTML = `<iframe src="https://www.youtube.com/embed/${trailerId}?autoplay=1&rel=0&modestbranding=1&vq=hd2160" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
+            playerContainer.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            this.closeModal();
         } else if (searchQuery) {
-            // YouTube search embed - plays first matching result in highest quality
-            embedUrl = `https://www.youtube.com/embed?listType=search&list=${searchQuery}&vq=hd2160`;
+            // No trailer ID saved — open YouTube search directly (guaranteed to work)
+            window.open(`https://www.youtube.com/results?search_query=${searchQuery}`, '_blank');
+            this.showToast('Opening 4K trailer on YouTube...', 'info');
         }
-        
-        if (embedUrl) {
-            playerContent.innerHTML = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
-        }
-        
-        playerContainer.classList.add('active');
-        document.body.style.overflow = 'hidden';
-        this.closeModal();
     }
 
     isYouTubeUrl(url) {
