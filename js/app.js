@@ -488,19 +488,18 @@ class PriismaTv {
         // Delete button
         document.getElementById('modalDelete').onclick = () => this.deleteItem(item);
 
-        // Trailer button - always show, auto-searches YouTube if no trailer saved
+        // Trailer button - opens YouTube trailer directly
         const trailerBtn = document.getElementById('modalTrailer');
         trailerBtn.style.display = 'inline-flex';
-        if (item.trailer) {
-            trailerBtn.onclick = () => this.playTrailer(item.trailer);
-        } else {
-            // Open YouTube search for the trailer
-            trailerBtn.onclick = () => {
-                const query = encodeURIComponent(`${item.title} ${item.year || ''} official trailer`);
-                window.open(`https://www.youtube.com/results?search_query=${query}`, '_blank');
-                this.showToast('Opening YouTube trailer search...', 'info');
-            };
-        }
+        trailerBtn.onclick = () => {
+            if (item.trailer) {
+                this.playTrailer(item.trailer);
+            } else {
+                // Search YouTube for the trailer
+                const query = encodeURIComponent(`${item.title} ${item.year || ''} official trailer HD`);
+                this.playTrailer(null, query);
+            }
+        };
 
         // Links section
         const linksEl = document.getElementById('modalLinks');
@@ -627,29 +626,28 @@ class PriismaTv {
         this.closeModal();
     }
 
-    // Embed sources - CONFIRMED WORKING formats
+    // Embed sources - CONFIRMED WORKING as of 2025
     getEmbedSources(imdbId, type, season = 1, episode = 1) {
         const isMovie = type === 'movie';
-        const tmdbId = this.currentDetailItem?.tmdbId || '';
         const s = season;
         const e = episode;
 
         if (isMovie) {
             return [
                 { name: 'Server 1', url: `https://autoembed.co/movie/imdb/${imdbId}` },
-                { name: 'Server 2', url: `https://2embed.cc/embed/${imdbId}` },
-                { name: 'Server 3', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` },
-                { name: 'Server 4', url: `https://vidsrc.wiki/embed/movie/${imdbId}` },
+                { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` },
+                { name: 'Server 3', url: `https://2embed.cc/embed/${imdbId}` },
+                { name: 'Server 4', url: `https://vidsrc.io/embed/movie/${imdbId}` },
                 { name: 'Server 5', url: `https://vidsrc.me/embed/movie?imdb=${imdbId}` },
             ];
         }
 
-        // TV Shows & Anime - with season/episode
+        // TV Shows & Anime
         return [
             { name: 'Server 1', url: `https://autoembed.co/tv/imdb/${imdbId}-${s}-${e}` },
-            { name: 'Server 2', url: `https://2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
-            { name: 'Server 3', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}` },
-            { name: 'Server 4', url: `https://vidsrc.wiki/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}` },
+            { name: 'Server 3', url: `https://2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
+            { name: 'Server 4', url: `https://vidsrc.io/embed/tv/${imdbId}/${s}/${e}` },
             { name: 'Server 5', url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}` },
         ];
     }
@@ -817,7 +815,7 @@ class PriismaTv {
         document.body.style.overflow = '';
     }
 
-    playTrailer(trailerId) {
+    playTrailer(trailerId, searchQuery = null) {
         const playerContainer = document.getElementById('videoPlayer');
         const playerContent = document.getElementById('videoPlayerContent');
         const sourceBar = document.getElementById('videoSourceBar');
@@ -825,7 +823,15 @@ class PriismaTv {
         sourceBar.innerHTML = '<button class="active" style="pointer-events:none;"><i class="fas fa-video"></i> Trailer</button>';
         sourceBar.style.display = 'flex';
         
-        playerContent.innerHTML = `<iframe src="https://www.youtube.com/embed/${trailerId}?autoplay=1&rel=0&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;"></iframe>`;
+        let embedUrl;
+        if (trailerId) {
+            embedUrl = `https://www.youtube.com/embed/${trailerId}?autoplay=1&rel=0&modestbranding=1&hd=1`;
+        } else if (searchQuery) {
+            // Use YouTube's search embed - plays first result
+            embedUrl = `https://www.youtube.com/embed?listType=search&list=${searchQuery}`;
+        }
+        
+        playerContent.innerHTML = `<iframe src="${embedUrl}" frameborder="0" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
         
         playerContainer.classList.add('active');
         document.body.style.overflow = 'hidden';
