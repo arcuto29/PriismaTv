@@ -78,6 +78,24 @@ class PriismaTv {
         }
     }
 
+    // ═══════ OWNER AUTH ═══════
+    isOwnerAuthenticated() {
+        return sessionStorage.getItem('priismatv_owner') === 'true';
+    }
+
+    promptOwnerPassword(action) {
+        if (this.isOwnerAuthenticated()) return true;
+        const pw = prompt('Owner password required:');
+        if (pw === 'Jolterz2929$') {
+            sessionStorage.setItem('priismatv_owner', 'true');
+            this.showToast('Owner access granted!', 'success');
+            return true;
+        } else if (pw !== null) {
+            this.showToast('Wrong password', 'error');
+        }
+        return false;
+    }
+
     // ═══════ NAVIGATION ═══════
     bindNavigation() {
         document.querySelectorAll('[data-page]').forEach(link => {
@@ -111,7 +129,9 @@ class PriismaTv {
             case 'watchlist': this.renderWatchlist(); break;
             case 'favorites': this.renderFavorites(); break;
             case 'friends': this.renderFriends(); break;
-            case 'admin': this.updateStats(); break;
+            case 'admin': 
+                if (!this.promptOwnerPassword()) { this.navigateTo('home'); return; }
+                this.updateStats(); break;
             case 'history': this.renderHistory(); break;
             case 'collections': this.renderCollections(); break;
             case 'requests': this.renderRequests(); break;
@@ -519,8 +539,11 @@ class PriismaTv {
         // Delete button
         document.getElementById('modalDelete').onclick = () => this.deleteItem(item);
 
-        // Edit button
-        document.getElementById('modalEdit').onclick = () => this.toggleEditPanel(item);
+        // Edit button (owner only)
+        document.getElementById('modalEdit').onclick = () => {
+            if (!this.promptOwnerPassword()) return;
+            this.toggleEditPanel(item);
+        };
         document.getElementById('saveEditBtn').onclick = () => this.saveEdit(item);
         document.getElementById('cancelEditBtn').onclick = () => { document.getElementById('modalEditPanel').style.display = 'none'; };
         document.getElementById('autoFetchBtn').onclick = () => this.autoFetchPosterForItem(item);
@@ -560,6 +583,7 @@ class PriismaTv {
     }
 
     deleteItem(item) {
+        if (!this.promptOwnerPassword()) return;
         if (!confirm(`Delete "${item.title}" from your collection?`)) return;
         this.content = this.content.filter(c => c.id !== item.id);
         this.watchlist = this.watchlist.filter(id => id !== item.id);
@@ -1253,6 +1277,7 @@ class PriismaTv {
     }
 
     resetAllData() {
+        if (!this.promptOwnerPassword()) return;
         if (!confirm('This will DELETE all your content, watchlist, favorites, and friends. Are you sure?')) return;
         if (!confirm('REALLY sure? This cannot be undone!')) return;
         localStorage.removeItem(STORAGE_KEYS.CONTENT);
