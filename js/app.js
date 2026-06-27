@@ -643,13 +643,13 @@ class PriismaTv {
                 `;
             }
 
-            // Dubbed/Subbed toggle for anime
+            // Dubbed/Subbed toggle for anime - opens aniwave for real sub/dub selection
             let dubSubBar = '';
             if (isAnime) {
+                const animeTitle = encodeURIComponent(this.currentDetailItem?.title || '');
                 dubSubBar = `
                     <div class="dub-sub-toggle" id="dubSubToggle">
-                        <button class="dub-btn active" onclick="app.switchAudioTrack('sub', this)">SUB</button>
-                        <button class="dub-btn" onclick="app.switchAudioTrack('dub', this)">DUB</button>
+                        <button class="dub-btn" onclick="window.open('https://aniwaves.ru/search?keyword=${animeTitle}','_blank');app.showToast('Opening Aniwave - select SUB or DUB there','info')">SUB/DUB</button>
                     </div>
                 `;
             }
@@ -683,7 +683,7 @@ class PriismaTv {
     }
 
     // Embed sources - 1080p HD priority ordering
-    getEmbedSources(imdbId, type, season = 1, episode = 1, audioTrack = 'sub') {
+    getEmbedSources(imdbId, type, season = 1, episode = 1) {
         const isMovie = type === 'movie';
         const s = season;
         const e = episode;
@@ -698,17 +698,7 @@ class PriismaTv {
             ];
         }
 
-        // TV Shows & Anime - dubbed vs subbed
-        if (audioTrack === 'dub') {
-            return [
-                { name: '1080p Dub 1', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}&quality=1080p&lang=eng` },
-                { name: '1080p Dub 2', url: `https://autoembed.co/tv/imdb/${imdbId}-${s}-${e}` },
-                { name: '1080p Dub 3', url: `https://vidsrc.me/embed/tv?imdb=${imdbId}&season=${s}&episode=${e}&ds_lang=en` },
-                { name: 'HD Dub 4', url: `https://2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
-                { name: 'HD Dub 5', url: `https://vidsrc.io/embed/tv/${imdbId}/${s}/${e}` },
-            ];
-        }
-
+        // TV Shows & Anime
         return [
             { name: '1080p Server 1', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}&quality=1080p` },
             { name: '1080p Server 2', url: `https://autoembed.co/tv/imdb/${imdbId}-${s}-${e}` },
@@ -761,37 +751,7 @@ class PriismaTv {
     }
 
     // Switch between dubbed and subbed for anime
-    switchAudioTrack(track, btn) {
-        // Update button states
-        document.querySelectorAll('.dub-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        this.currentAudioTrack = track;
-        const imdbId = this.currentImdbId;
-        const season = document.getElementById('seasonSelect')?.value || 1;
-        const episode = document.getElementById('episodeSelect')?.value || 1;
-
-        // Get sources for the selected audio track
-        const sources = this.getEmbedSources(imdbId, 'tv', season, episode, track);
-
-        // Update source bar buttons
-        const sourceBar = document.getElementById('videoSourceBar');
-        const buttons = sourceBar.querySelectorAll('button:not(.dub-btn)');
-        buttons.forEach((btn, i) => {
-            if (sources[i]) {
-                btn.onclick = () => this.switchSource(sources[i].url, btn);
-            }
-        });
-
-        // Load first source with new audio track
-        const playerContent = document.getElementById('videoPlayerContent');
-        playerContent.innerHTML = `<iframe src="${sources[0].url}" frameborder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen scrolling="no" referrerpolicy="origin" style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;"></iframe>`;
-        
-        buttons.forEach(b => b.classList.remove('active'));
-        if (buttons[0]) buttons[0].classList.add('active');
-
-        this.showToast(`Switched to ${track === 'dub' ? 'English Dubbed' : 'Japanese Subbed'}`, 'info');
-    }
+    // Opens aniwaves.ru where you can actually select sub or dub
 
     // Auto-find streaming link when no video URL is saved
     async autoStreamFromTitle(item) {
