@@ -25,6 +25,48 @@ class PriismaTv {
         this.renderHome();
         this.updateStats();
         this.updateNotifBadge();
+        this.fixMissingPosters();
+    }
+
+    // Auto-fix items with broken/missing poster images
+    async fixMissingPosters() {
+        const TMDB_API_KEY = '2dca580c2a14b55200e784d157207b4d';
+        let updated = false;
+
+        for (let item of this.content) {
+            // Skip if poster exists and is a valid TMDB URL with a real path
+            if (item.poster && item.poster.includes('tmdb.org') && !item.poster.includes('placeholder')) {
+                // Test if the image actually loads by checking it's not a generic path
+                continue;
+            }
+
+            // Need to fetch poster from TMDB
+            try {
+                const searchType = item.type === 'movie' ? 'movie' : 'tv';
+                const res = await fetch(
+                    `https://api.themoviedb.org/3/search/${searchType}?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(item.title)}&year=${item.year || ''}`
+                );
+                const data = await res.json();
+                if (data.results && data.results.length > 0) {
+                    const result = data.results[0];
+                    if (result.poster_path) {
+                        item.poster = `https://image.tmdb.org/t/p/w500${result.poster_path}`;
+                        updated = true;
+                    }
+                    if (result.backdrop_path) {
+                        item.backdrop = `https://image.tmdb.org/t/p/original${result.backdrop_path}`;
+                        updated = true;
+                    }
+                }
+            } catch (e) {
+                // Skip failed fetches
+            }
+        }
+
+        if (updated) {
+            this.saveContent();
+            this.renderHome(); // Re-render with new images
+        }
     }
 
     // ═══════ NAVIGATION ═══════
@@ -1278,7 +1320,7 @@ class PriismaTv {
 
     getPlaceholder(title) {
         const encoded = encodeURIComponent(title || '?');
-        return `https://via.placeholder.com/300x450/13132a/00d4ff?text=${encoded}`;
+        return `https://placehold.co/300x450/13132a/00d4ff?text=${encoded}&font=roboto`;
     }
 
     updateNotifBadge() {
