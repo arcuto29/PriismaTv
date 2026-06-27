@@ -138,9 +138,17 @@ class PriismaTv {
 
     bindThemeToggle() {
         document.getElementById('themeToggle').addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('collapsed');
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem('priismatv_theme', isLight ? 'light' : 'dark');
+            const icon = document.querySelector('#themeToggle i');
+            icon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
         });
+        // Load saved theme
+        if (localStorage.getItem('priismatv_theme') === 'light') {
+            document.body.classList.add('light-mode');
+            document.querySelector('#themeToggle i').className = 'fas fa-sun';
+        }
     }
 
 
