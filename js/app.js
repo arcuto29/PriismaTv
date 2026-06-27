@@ -575,21 +575,21 @@ class PriismaTv {
 
         if (isMovie) {
             return [
-                { name: 'Server 1', url: `https://vidsrc.in/embed/movie/${imdbId}` },
-                { name: 'Server 2', url: tmdbId ? `https://vidsrc.wiki/embed/movie/${tmdbId}` : `https://vidsrc.wiki/embed/movie/${imdbId}` },
-                { name: 'Server 3', url: `https://vidsrc.mov/embed/movie/${imdbId}` },
-                { name: 'Server 4', url: `https://player.autoembed.cc/embed/movie/${imdbId}` },
-                { name: 'Server 5', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` },
+                { name: 'Server 1', url: `https://player.autoembed.cc/embed/movie/${imdbId}` },
+                { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` },
+                { name: 'Server 3', url: `https://vidsrc.in/embed/movie/${imdbId}` },
+                { name: 'Server 4', url: tmdbId ? `https://vidsrc.wiki/embed/movie/${tmdbId}` : `https://vidsrc.wiki/embed/movie/${imdbId}` },
+                { name: 'Server 5', url: `https://vidsrc.mov/embed/movie/${imdbId}` },
             ];
         }
 
         // TV Shows & Anime - with season/episode
         return [
-            { name: 'Server 1', url: `https://vidsrc.in/embed/tv/${imdbId}/${s}/${e}` },
-            { name: 'Server 2', url: tmdbId ? `https://vidsrc.wiki/embed/tv/${tmdbId}/${s}/${e}` : `https://vidsrc.wiki/embed/tv/${imdbId}/${s}/${e}` },
-            { name: 'Server 3', url: `https://vidsrc.mov/embed/tv/${imdbId}/${s}/${e}` },
-            { name: 'Server 4', url: `https://player.autoembed.cc/embed/tv/${imdbId}/${s}/${e}` },
-            { name: 'Server 5', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}` },
+            { name: 'Server 1', url: `https://player.autoembed.cc/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}` },
+            { name: 'Server 3', url: `https://vidsrc.in/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 4', url: tmdbId ? `https://vidsrc.wiki/embed/tv/${tmdbId}/${s}/${e}` : `https://vidsrc.wiki/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 5', url: `https://vidsrc.mov/embed/tv/${imdbId}/${s}/${e}` },
         ];
     }
 
