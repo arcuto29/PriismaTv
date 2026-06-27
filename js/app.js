@@ -215,6 +215,7 @@ class PriismaTv {
         this.renderRow('topRatedRow', this.getByTag('top-rated'));
         this.renderRow('animeRow', this.content.filter(c => c.type === 'anime'));
         this.renderContinueWatching();
+        this.renderCountdowns();
     }
 
     renderHero() {
@@ -473,6 +474,14 @@ class PriismaTv {
         // Watch button - always try to play (auto-finds stream if needed)
         const watchBtn = document.getElementById('modalWatch');
         watchBtn.style.opacity = '1';
+        
+        // Quick Resume - show resume button if there's progress
+        const progress = this.getProgress(item.id);
+        if (progress && (item.type === 'tvshow' || item.type === 'anime')) {
+            watchBtn.innerHTML = `<i class="fas fa-play"></i> Resume S${progress.season} E${progress.episode}`;
+        } else {
+            watchBtn.innerHTML = `<i class="fas fa-play"></i> Watch`;
+        }
         watchBtn.onclick = () => this.playContent(item);
 
         // Watchlist button
@@ -629,7 +638,7 @@ class PriismaTv {
 
         // If we have an IMDB ID, show source switcher with embeddable providers
         if (imdbId) {
-            const sources = this.getEmbedSources(imdbId, type);
+            let sources = this.getEmbedSources(imdbId, type);
             const isShow = (type === 'tv' || this.currentDetailItem?.type === 'anime' || this.currentDetailItem?.type === 'tvshow');
             const isAnime = this.currentDetailItem?.type === 'anime';
             
@@ -638,16 +647,28 @@ class PriismaTv {
             if (isShow) {
                 const maxSeasons = this.currentDetailItem?.seasons || 4;
                 const maxEpisodes = this.currentDetailItem?.episodes ? Math.min(Math.ceil(this.currentDetailItem.episodes / maxSeasons), 26) : 12;
+                
+                // Get saved progress for quick resume
+                const progress = this.currentDetailItem ? this.getProgress(this.currentDetailItem.id) : null;
+                const savedSeason = progress ? progress.season : 1;
+                const savedEpisode = progress ? progress.episode : 1;
+
                 episodeBar = `
                     <div class="episode-selector" id="episodeSelector">
                         <select id="seasonSelect" onchange="app.changeEpisode()">
-                            ${Array.from({length: maxSeasons}, (_, i) => `<option value="${i+1}">S${i+1}</option>`).join('')}
+                            ${Array.from({length: maxSeasons}, (_, i) => `<option value="${i+1}" ${i+1 === savedSeason ? 'selected' : ''}>S${i+1}</option>`).join('')}
                         </select>
                         <select id="episodeSelect" onchange="app.changeEpisode()">
-                            ${Array.from({length: maxEpisodes}, (_, i) => `<option value="${i+1}">E${i+1}</option>`).join('')}
+                            ${Array.from({length: maxEpisodes}, (_, i) => `<option value="${i+1}" ${i+1 === savedEpisode ? 'selected' : ''}>E${i+1}</option>`).join('')}
                         </select>
                     </div>
                 `;
+
+                // Use saved progress for the initial source load
+                if (progress) {
+                    const resumeSources = this.getEmbedSources(imdbId, type, savedSeason, savedEpisode);
+                    sources = resumeSources;
+                }
             }
 
             // Dubbed/Subbed toggle for anime - opens aniwave for real sub/dub selection
@@ -735,6 +756,11 @@ class PriismaTv {
         const type = this.currentPlayerType;
         
         if (!imdbId) return;
+
+        // Save progress for quick resume
+        if (this.currentDetailItem) {
+            this.saveProgress(this.currentDetailItem.id, season, episode);
+        }
         
         // Update sources with new season/episode
         const sources = this.getEmbedSources(imdbId, type, season, episode);
@@ -1525,6 +1551,57 @@ class PriismaTv {
     getItemRating(itemId) {
         const ratings = JSON.parse(localStorage.getItem('priismatv_ratings')) || {};
         return ratings[itemId] || 0;
+    }
+
+    // ═══════ COUNTDOWN TIMER ═══════
+    renderCountdowns() {
+        const countdowns = [
+            { title: 'Solo Leveling Season 3', date: '2025-10-01', poster: 'https://image.tmdb.org/t/p/w500/geCRueV3ElhRTr0xtJuEWJt6dJ1.jpg' },
+            { title: 'Attack on Titan: THE LAST ATTACK', date: '2025-09-13', poster: 'https://image.tmdb.org/t/p/w500/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg' },
+            { title: 'Demon Slayer: Infinity Castle', date: '2025-09-26', poster: 'https://image.tmdb.org/t/p/w500/xUfRZu2mi8jmRhn8M02IV1JdyJo.jpg' },
+            { title: 'Stranger Things Season 5', date: '2025-10-15', poster: 'https://image.tmdb.org/t/p/w500/49WJfeN0moxb9IPfGn8AIqMGskD.jpg' },
+            { title: 'The Witcher Season 5', date: '2026-03-01', poster: 'https://image.tmdb.org/t/p/w500/7vjaCdMw15FEbXyLQTVJ04UcwaJ.jpg' },
+        ];
+
+        const section = document.getElementById('countdownSection');
+        const row = document.getElementById('countdownRow');
+        const now = new Date();
+
+        // Only show countdowns that haven't passed
+        const upcoming = countdowns.filter(c => new Date(c.date) > now);
+        if (upcoming.length === 0) { section.style.display = 'none'; return; }
+
+        section.style.display = 'block';
+        row.innerHTML = upcoming.map(c => {
+            const diff = new Date(c.date) - now;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            return `
+                <div class="countdown-card">
+                    <img src="${c.poster}" alt="${c.title}" onerror="this.src='${this.getPlaceholder(c.title)}'">
+                    <div class="countdown-info">
+                        <h4>${c.title}</h4>
+                        <div class="countdown-timer">
+                            <span class="countdown-number">${days}</span><small>days</small>
+                            <span class="countdown-number">${hours}</span><small>hrs</small>
+                        </div>
+                        <span class="countdown-date">${new Date(c.date).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'})}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // ═══════ QUICK RESUME ═══════
+    saveProgress(itemId, season, episode) {
+        let progress = JSON.parse(localStorage.getItem('priismatv_progress')) || {};
+        progress[itemId] = { season: parseInt(season), episode: parseInt(episode), updatedAt: new Date().toISOString() };
+        localStorage.setItem('priismatv_progress', JSON.stringify(progress));
+    }
+
+    getProgress(itemId) {
+        const progress = JSON.parse(localStorage.getItem('priismatv_progress')) || {};
+        return progress[itemId] || null;
     }
 
     // ═══════ CHAT SYSTEM ═══════
