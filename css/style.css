@@ -1056,3 +1056,51 @@ body {
 .countdown-date {
     font-size: 0.7rem; color: var(--text-muted);
 }
+
+
+/* ═══════ SPIN WHEEL MODAL ═══════ */
+.spin-modal {
+    position: fixed; inset: 0; z-index: 2600;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+}
+.spin-modal.active { display: flex; }
+.spin-modal-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl);
+    padding: 40px; position: relative;
+    max-width: 450px; width: 90%;
+}
+.wheel-container {
+    position: relative; display: flex;
+    align-items: center; justify-content: center;
+    margin-bottom: 24px;
+}
+.wheel-container canvas { border-radius: 50%; }
+.spin-btn {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--accent-gradient); border: 3px solid white;
+    color: white; font-weight: 900; font-size: 0.7rem;
+    cursor: pointer; z-index: 5;
+    box-shadow: 0 0 20px rgba(0,212,255,0.5);
+    transition: var(--transition);
+}
+.spin-btn:hover { transform: translate(-50%, -50%) scale(1.1); }
+.spin-result {
+    text-align: center; padding-top: 16px;
+    border-top: 1px solid var(--glass-border);
+}
+.spin-result h3 {
+    font-size: 1.2rem; margin-bottom: 16px;
+    color: var(--accent-primary);
+}
+.spin-result .btn { margin: 0 6px; }
+
+/* ═══════ QUIZ OPTIONS ═══════ */
+.quiz-option:hover {
+    border-color: var(--accent-primary) !important;
+    background: rgba(0,212,255,0.05) !important;
+}

@@ -25,6 +25,7 @@ class PriismaTv {
         this.bindChat();
         this.bindRandomPick();
         this.bindRequests();
+        this.bindQuiz();
         this.renderHome();
         this.updateStats();
         this.updateNotifBadge();
@@ -114,6 +115,8 @@ class PriismaTv {
             case 'history': this.renderHistory(); break;
             case 'collections': this.renderCollections(); break;
             case 'requests': this.renderRequests(); break;
+            case 'quiz': this.renderQuiz(); break;
+            case 'challenges': this.renderChallenges(); break;
         }
 
         // Close mobile sidebar
@@ -1463,7 +1466,93 @@ class PriismaTv {
 
     // ═══════ RANDOM PICK ═══════
     bindRandomPick() {
-        document.getElementById('randomPickBtn').addEventListener('click', () => this.randomPick());
+        document.getElementById('spinWheelBtn').addEventListener('click', () => this.openSpinWheel());
+        document.getElementById('spinModalClose').addEventListener('click', () => this.closeSpinWheel());
+        document.getElementById('spinBtn').addEventListener('click', () => this.spinWheel());
+        document.getElementById('spinAgainBtn')?.addEventListener('click', () => this.spinWheel());
+    }
+
+    openSpinWheel() {
+        document.getElementById('spinModal').classList.add('active');
+        this.drawWheel();
+    }
+
+    closeSpinWheel() {
+        document.getElementById('spinModal').classList.remove('active');
+    }
+
+    drawWheel() {
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const genres = ['Action', 'Sci-Fi', 'Fantasy', 'Drama', 'Thriller', 'Comedy', 'Anime', 'Horror'];
+        const colors = ['#ff4444', '#00d4ff', '#7c3aed', '#f59e0b', '#6b21a8', '#10b981', '#ff64c8', '#1a1a35'];
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const r = 160;
+        const sliceAngle = (2 * Math.PI) / genres.length;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        genres.forEach((genre, i) => {
+            const start = i * sliceAngle + (this.wheelRotation || 0);
+            const end = start + sliceAngle;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, r, start, end);
+            ctx.fillStyle = colors[i];
+            ctx.fill();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // Text
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(start + sliceAngle / 2);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 13px Inter';
+            ctx.fillText(genre, r * 0.55, 5);
+            ctx.restore();
+        });
+        // Center circle
+        ctx.beginPath();
+        ctx.arc(cx, cy, 25, 0, 2 * Math.PI);
+        ctx.fillStyle = '#0c0c14';
+        ctx.fill();
+        ctx.strokeStyle = 'var(--accent-primary)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        // Arrow
+        ctx.beginPath();
+        ctx.moveTo(cx + r + 10, cy);
+        ctx.lineTo(cx + r - 10, cy - 10);
+        ctx.lineTo(cx + r - 10, cy + 10);
+        ctx.fillStyle = '#00d4ff';
+        ctx.fill();
+    }
+
+    spinWheel() {
+        const genres = ['action', 'sci-fi', 'fantasy', 'drama', 'thriller', 'comedy', 'anime', 'horror'];
+        document.getElementById('spinResult').style.display = 'none';
+        
+        let spins = 0;
+        const totalSpins = 30 + Math.floor(Math.random() * 20);
+        const interval = setInterval(() => {
+            this.wheelRotation = (this.wheelRotation || 0) + 0.3;
+            this.drawWheel();
+            spins++;
+            if (spins >= totalSpins) {
+                clearInterval(interval);
+                // Pick random genre based on final position
+                const selectedGenre = genres[Math.floor(Math.random() * genres.length)];
+                let matches = this.content.filter(c => c.genre === selectedGenre || (selectedGenre === 'anime' && c.type === 'anime'));
+                if (matches.length === 0) matches = this.content;
+                const pick = matches[Math.floor(Math.random() * matches.length)];
+                
+                document.getElementById('spinResult').style.display = 'block';
+                document.getElementById('spinResultTitle').textContent = pick.title;
+                document.getElementById('spinResultWatch').onclick = () => { this.closeSpinWheel(); this.openDetail(pick); };
+                this.showToast(`The wheel chose: ${pick.title}!`, 'success');
+            }
+        }, 50);
     }
 
     randomPick() {
@@ -1472,6 +1561,172 @@ class PriismaTv {
             this.openDetail(randomItem);
             this.showToast(`Random pick: ${randomItem.title}!`, 'success');
         }
+    }
+
+    // ═══════ QUIZ / TRIVIA ═══════
+    bindQuiz() {
+        document.getElementById('nextQuizBtn')?.addEventListener('click', () => this.loadQuizQuestion());
+        this.quizScore = 0;
+        this.quizStreak = 0;
+    }
+
+    renderQuiz() {
+        this.loadQuizQuestion();
+    }
+
+    loadQuizQuestion() {
+        const questions = this.generateQuizQuestions();
+        const q = questions[Math.floor(Math.random() * questions.length)];
+        
+        document.getElementById('quizQuestion').textContent = q.question;
+        document.getElementById('quizOptions').innerHTML = q.options.map((opt, i) => `
+            <button class="quiz-option" onclick="app.answerQuiz(${i === q.correct}, this)" style="padding:14px 20px;background:var(--bg-tertiary);border:1px solid var(--border-color);border-radius:var(--radius-md);color:var(--text-primary);font-size:0.9rem;cursor:pointer;transition:all 0.2s;font-family:inherit;">
+                ${opt}
+            </button>
+        `).join('');
+        document.getElementById('nextQuizBtn').style.display = 'none';
+    }
+
+    generateQuizQuestions() {
+        const questions = [];
+        const items = this.content.filter(c => c.year && c.rating);
+        
+        for (let i = 0; i < 20 && i < items.length; i++) {
+            const item = items[Math.floor(Math.random() * items.length)];
+            const wrongYears = [item.year - 2, item.year + 1, item.year - 3].filter(y => y > 1980);
+            
+            // Year question
+            questions.push({
+                question: `What year was "${item.title}" released?`,
+                options: this.shuffle([item.year.toString(), ...wrongYears.slice(0, 3).map(String)]),
+                correct: 0
+            });
+            // Fix correct index after shuffle
+            const yearQ = questions[questions.length - 1];
+            yearQ.correct = yearQ.options.indexOf(item.year.toString());
+
+            // Rating question
+            const wrongRatings = [(item.rating - 1.2).toFixed(1), (item.rating + 0.8).toFixed(1), (item.rating - 0.5).toFixed(1)];
+            questions.push({
+                question: `What is the rating of "${item.title}"?`,
+                options: this.shuffle([item.rating.toString(), ...wrongRatings]),
+                correct: 0
+            });
+            const ratQ = questions[questions.length - 1];
+            ratQ.correct = ratQ.options.indexOf(item.rating.toString());
+
+            // Type question
+            if (item.genre) {
+                const wrongGenres = ['action', 'comedy', 'horror', 'romance', 'sci-fi', 'drama'].filter(g => g !== item.genre).slice(0, 3);
+                questions.push({
+                    question: `What genre is "${item.title}"?`,
+                    options: this.shuffle([this.capitalizeFirst(item.genre), ...wrongGenres.map(g => this.capitalizeFirst(g))]),
+                    correct: 0
+                });
+                const genQ = questions[questions.length - 1];
+                genQ.correct = genQ.options.indexOf(this.capitalizeFirst(item.genre));
+            }
+        }
+        return questions;
+    }
+
+    shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    answerQuiz(isCorrect, btn) {
+        // Disable all buttons
+        document.querySelectorAll('.quiz-option').forEach(b => { b.disabled = true; b.style.opacity = '0.6'; });
+        
+        if (isCorrect) {
+            btn.style.background = 'rgba(0, 255, 136, 0.2)';
+            btn.style.borderColor = '#00ff88';
+            btn.style.color = '#00ff88';
+            this.quizScore++;
+            this.quizStreak++;
+            this.showToast('Correct! 🎉', 'success');
+        } else {
+            btn.style.background = 'rgba(255, 68, 68, 0.2)';
+            btn.style.borderColor = '#ff4444';
+            btn.style.color = '#ff4444';
+            this.quizStreak = 0;
+            this.showToast('Wrong! ❌', 'error');
+        }
+
+        document.getElementById('quizScore').textContent = `Score: ${this.quizScore}`;
+        document.getElementById('quizStreak').textContent = `Streak: ${this.quizStreak}`;
+        document.getElementById('nextQuizBtn').style.display = 'inline-flex';
+    }
+
+    // ═══════ WATCH CHALLENGES ═══════
+    renderChallenges() {
+        const challenges = [
+            { id: 'c1', title: 'Horror Night', desc: 'Watch 3 horror/thriller movies', icon: 'ghost', color: '#6b21a8', target: 3, genre: 'horror,thriller' },
+            { id: 'c2', title: 'Anime Marathon', desc: 'Watch 5 anime series', icon: 'dragon', color: '#ff64c8', target: 5, type: 'anime' },
+            { id: 'c3', title: 'Fantasy Quest', desc: 'Watch all LOTR + Hobbit (6 movies)', icon: 'hat-wizard', color: '#7c3aed', target: 6, titles: ['The Lord of the Rings','The Hobbit'] },
+            { id: 'c4', title: 'Marvel Binge', desc: 'Watch 5 Marvel movies', icon: 'mask', color: '#e23636', target: 5, titles: ['Avengers','Spider-Man','Guardians','Deadpool'] },
+            { id: 'c5', title: 'Sci-Fi Explorer', desc: 'Watch 4 sci-fi movies', icon: 'rocket', color: '#00d4ff', target: 4, genre: 'sci-fi' },
+            { id: 'c6', title: 'Binge King', desc: 'Watch 10 episodes of any show', icon: 'crown', color: '#ffd700', target: 10, type: 'tvshow,anime' },
+            { id: 'c7', title: 'Genre Hopper', desc: 'Watch something from 5 different genres', icon: 'random', color: '#10b981', target: 5, special: 'genres' },
+            { id: 'c8', title: 'Completionist', desc: 'Watch 20 titles total', icon: 'check-double', color: '#f59e0b', target: 20, special: 'total' },
+        ];
+
+        const progress = JSON.parse(localStorage.getItem('priismatv_challenge_progress')) || {};
+        const history = JSON.parse(localStorage.getItem('priismatv_history')) || [];
+
+        const grid = document.getElementById('challengesGrid');
+        grid.innerHTML = challenges.map(c => {
+            const current = this.getChallengeProgress(c, history);
+            const percent = Math.min((current / c.target) * 100, 100);
+            const completed = current >= c.target;
+            
+            return `
+                <div style="background:var(--bg-secondary);border:1px solid ${completed ? c.color : 'var(--glass-border)'};border-radius:var(--radius-xl);padding:28px;transition:all 0.3s;${completed ? 'box-shadow:0 0 20px ' + c.color + '40;' : ''}">
+                    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+                        <div style="width:48px;height:48px;border-radius:50%;background:${c.color}20;display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-${c.icon}" style="color:${c.color};font-size:1.2rem;"></i>
+                        </div>
+                        <div>
+                            <h3 style="font-size:1rem;margin-bottom:2px;">${c.title}</h3>
+                            <p style="font-size:0.8rem;color:var(--text-muted);">${c.desc}</p>
+                        </div>
+                        ${completed ? '<i class="fas fa-check-circle" style="color:#00ff88;font-size:1.3rem;margin-left:auto;"></i>' : ''}
+                    </div>
+                    <div style="background:var(--bg-tertiary);border-radius:var(--radius-full);height:8px;overflow:hidden;margin-bottom:8px;">
+                        <div style="height:100%;width:${percent}%;background:${c.color};border-radius:var(--radius-full);transition:width 0.5s;"></div>
+                    </div>
+                    <span style="font-size:0.75rem;color:var(--text-muted);">${current}/${c.target} ${completed ? '✓ Complete!' : ''}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    getChallengeProgress(challenge, history) {
+        const watchedIds = history.map(h => h.id);
+        const watchedItems = watchedIds.map(id => this.content.find(c => c.id === id)).filter(Boolean);
+        
+        if (challenge.special === 'total') return watchedItems.length;
+        if (challenge.special === 'genres') {
+            const genres = new Set(watchedItems.map(i => i.genre).filter(Boolean));
+            return genres.size;
+        }
+        if (challenge.genre) {
+            const genres = challenge.genre.split(',');
+            return watchedItems.filter(i => genres.includes(i.genre)).length;
+        }
+        if (challenge.type) {
+            const types = challenge.type.split(',');
+            return watchedItems.filter(i => types.includes(i.type)).length;
+        }
+        if (challenge.titles) {
+            return watchedItems.filter(i => challenge.titles.some(t => i.title.includes(t))).length;
+        }
+        return 0;
     }
 
     // ═══════ CONTENT REQUESTS ═══════
