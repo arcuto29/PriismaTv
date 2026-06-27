@@ -1137,6 +1137,14 @@ body.light-mode {
     --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 body.light-mode #starsCanvas { opacity: 0; }
+body.light-mode .hero-video-bg {
+    display: none;
+}
+body.light-mode .hero {
+    background-image: url('../sung-jinwoo-vs-ant-king-sung-jingwoo-vs-beru.gif');
+    background-size: cover;
+    background-position: center;
+}
 body.light-mode .hero::after {
     background: linear-gradient(to top, var(--bg-primary) 0%, rgba(245,245,250,0.85) 25%, rgba(245,245,250,0.4) 55%, transparent 100%);
 }
