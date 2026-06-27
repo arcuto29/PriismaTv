@@ -981,3 +981,29 @@ body {
 @media (max-width: 480px) {
     .chat-panel { width: calc(100vw - 48px); height: 400px; right: -12px; }
 }
+
+
+/* ═══════ RANDOM PICK BUTTON ═══════ */
+.random-pick-btn {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--accent-gradient);
+    border: none; color: white;
+    font-size: 1.4rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 25px rgba(0, 212, 255, 0.4);
+    transition: var(--transition);
+    z-index: 2400;
+    animation: randomBtnFloat 3s ease-in-out infinite;
+}
+.random-pick-btn:hover {
+    transform: translateX(-50%) scale(1.15) rotate(15deg);
+    box-shadow: 0 6px 35px rgba(0, 212, 255, 0.6);
+}
+@keyframes randomBtnFloat {
+    0%, 100% { box-shadow: 0 4px 25px rgba(0, 212, 255, 0.3); }
+    50% { box-shadow: 0 4px 35px rgba(0, 212, 255, 0.5); }
+}

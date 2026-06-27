@@ -23,6 +23,8 @@ class PriismaTv {
         this.bindVideoPlayer();
         this.bindThemeToggle();
         this.bindChat();
+        this.bindRandomPick();
+        this.bindRequests();
         this.renderHome();
         this.updateStats();
         this.updateNotifBadge();
@@ -109,6 +111,9 @@ class PriismaTv {
             case 'favorites': this.renderFavorites(); break;
             case 'friends': this.renderFriends(); break;
             case 'admin': this.updateStats(); break;
+            case 'history': this.renderHistory(); break;
+            case 'collections': this.renderCollections(); break;
+            case 'requests': this.renderRequests(); break;
         }
 
         // Close mobile sidebar
@@ -209,6 +214,7 @@ class PriismaTv {
         this.renderRow('recentRow', this.getRecent());
         this.renderRow('topRatedRow', this.getByTag('top-rated'));
         this.renderRow('animeRow', this.content.filter(c => c.type === 'anime'));
+        this.renderContinueWatching();
     }
 
     renderHero() {
@@ -583,6 +589,7 @@ class PriismaTv {
     }
 
     playContent(item) {
+        this.addToHistory(item);
         if (!item.video && !item.magnet) {
             // Try to generate a VidSrc link on-the-fly using TMDB
             this.autoStreamFromTitle(item);
@@ -1358,6 +1365,166 @@ class PriismaTv {
         document.getElementById('twitchFrame').src = `https://player.twitch.tv/?channel=${channel}&parent=${hostname}`;
         document.getElementById('twitchChannel').value = channel;
         this.showToast(`Loading ${channel}'s stream...`, 'info');
+    }
+
+    // ═══════ WATCH HISTORY ═══════
+    addToHistory(item) {
+        let history = JSON.parse(localStorage.getItem('priismatv_history')) || [];
+        // Remove if already exists (to move to top)
+        history = history.filter(h => h.id !== item.id);
+        // Add to beginning with timestamp
+        history.unshift({ id: item.id, title: item.title, poster: item.poster, type: item.type, watchedAt: new Date().toISOString() });
+        // Keep max 50 items
+        if (history.length > 50) history = history.slice(0, 50);
+        localStorage.setItem('priismatv_history', JSON.stringify(history));
+    }
+
+    renderHistory() {
+        const history = JSON.parse(localStorage.getItem('priismatv_history')) || [];
+        const empty = document.getElementById('historyEmpty');
+        if (history.length === 0) {
+            empty.classList.add('active');
+            document.getElementById('historyGrid').innerHTML = '';
+            return;
+        }
+        empty.classList.remove('active');
+        const items = history.map(h => this.content.find(c => c.id === h.id)).filter(Boolean);
+        this.renderGrid('historyGrid', items);
+
+        document.getElementById('clearHistory').onclick = () => {
+            if (confirm('Clear all watch history?')) {
+                localStorage.removeItem('priismatv_history');
+                this.renderHistory();
+                this.showToast('History cleared', 'info');
+            }
+        };
+    }
+
+    // ═══════ COLLECTIONS ═══════
+    renderCollections() {
+        const collections = [
+            { name: 'Marvel Universe', icon: 'mask', color: '#e23636', filter: (i) => ['Avengers Endgame','Spider-Man No Way Home','Spider-Man Across the Spider-Verse','Guardians of the Galaxy Vol 3','Deadpool & Wolverine','Loki'].includes(i.title) },
+            { name: 'DC Universe', icon: 'bat', color: '#0078d4', filter: (i) => ['The Dark Knight','The Batman','Joker'].includes(i.title) },
+            { name: 'Christopher Nolan', icon: 'film', color: '#d4a017', filter: (i) => ['Inception','Interstellar','The Dark Knight','The Prestige','Oppenheimer'].includes(i.title) },
+            { name: 'Fantasy Epics', icon: 'hat-wizard', color: '#7c3aed', filter: (i) => i.genre === 'fantasy' && i.type === 'movie' },
+            { name: 'Sci-Fi Masterpieces', icon: 'rocket', color: '#00d4ff', filter: (i) => i.genre === 'sci-fi' && i.type === 'movie' },
+            { name: 'Action Packed', icon: 'fist-raised', color: '#ff4444', filter: (i) => i.genre === 'action' && i.type === 'movie' },
+            { name: 'Anime Legends', icon: 'dragon', color: '#ff64c8', filter: (i) => i.type === 'anime' && i.rating >= 8.5 },
+            { name: 'Horror & Thriller', icon: 'ghost', color: '#6b21a8', filter: (i) => i.genre === 'horror' || i.genre === 'thriller' },
+            { name: 'Romance & Drama', icon: 'heart', color: '#ec4899', filter: (i) => i.genre === 'romance' || (i.genre === 'drama' && i.type === 'movie') },
+            { name: 'Top Rated (9+)', icon: 'trophy', color: '#ffd700', filter: (i) => i.rating >= 9.0 },
+            { name: 'Binge-Worthy Shows', icon: 'tv', color: '#10b981', filter: (i) => i.type === 'tvshow' && i.rating >= 8.5 },
+            { name: 'Long Runners (100+ eps)', icon: 'infinity', color: '#f59e0b', filter: (i) => i.episodes && i.episodes >= 100 },
+        ];
+
+        const container = document.getElementById('collectionsContainer');
+        container.innerHTML = collections.map(col => {
+            const items = this.content.filter(col.filter);
+            if (items.length === 0) return '';
+            return `
+                <div class="collection-section" style="margin-bottom:36px;">
+                    <div class="section-header" style="margin-bottom:16px;">
+                        <h2 style="display:flex;align-items:center;gap:10px;"><i class="fas fa-${col.icon}" style="color:${col.color};"></i> ${col.name} <span style="font-size:0.8rem;color:var(--text-muted);font-weight:400;">(${items.length})</span></h2>
+                    </div>
+                    <div class="content-row">${items.map(item => this.createCard(item)).join('')}</div>
+                </div>
+            `;
+        }).join('');
+
+        // Bind card events for all collection rows
+        container.querySelectorAll('.content-row').forEach(row => this.bindCardEvents(row));
+    }
+
+    // ═══════ RANDOM PICK ═══════
+    bindRandomPick() {
+        document.getElementById('randomPickBtn').addEventListener('click', () => this.randomPick());
+    }
+
+    randomPick() {
+        const randomItem = this.content[Math.floor(Math.random() * this.content.length)];
+        if (randomItem) {
+            this.openDetail(randomItem);
+            this.showToast(`Random pick: ${randomItem.title}!`, 'success');
+        }
+    }
+
+    // ═══════ CONTENT REQUESTS ═══════
+    bindRequests() {
+        document.getElementById('submitRequest')?.addEventListener('click', () => this.submitRequest());
+        document.getElementById('requestTitle')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') this.submitRequest();
+        });
+    }
+
+    submitRequest() {
+        const title = document.getElementById('requestTitle').value.trim();
+        const type = document.getElementById('requestType').value;
+        if (!title) { this.showToast('Enter a title to request', 'error'); return; }
+
+        let requests = JSON.parse(localStorage.getItem('priismatv_requests')) || [];
+        requests.push({ title, type, requestedAt: new Date().toISOString(), status: 'pending' });
+        localStorage.setItem('priismatv_requests', JSON.stringify(requests));
+        document.getElementById('requestTitle').value = '';
+        this.renderRequests();
+        this.showToast(`"${title}" requested!`, 'success');
+    }
+
+    renderRequests() {
+        const requests = JSON.parse(localStorage.getItem('priismatv_requests')) || [];
+        const list = document.getElementById('requestsList');
+        if (!list) return;
+        if (requests.length === 0) {
+            list.innerHTML = '<p style="color:var(--text-muted);font-size:0.85rem;">No requests yet.</p>';
+            return;
+        }
+        list.innerHTML = requests.map((r, i) => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg-tertiary);border-radius:var(--radius-md);margin-bottom:8px;">
+                <div>
+                    <strong style="font-size:0.9rem;">${r.title}</strong>
+                    <span style="font-size:0.75rem;color:var(--text-muted);margin-left:8px;">${r.type}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:0.7rem;padding:3px 8px;border-radius:4px;background:${r.status === 'pending' ? 'rgba(255,200,0,0.2);color:#ffd700' : 'rgba(0,255,136,0.2);color:#00ff88'};">${r.status}</span>
+                    <button onclick="app.removeRequest(${i})" style="background:none;border:none;color:var(--text-muted);cursor:pointer;"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    removeRequest(index) {
+        let requests = JSON.parse(localStorage.getItem('priismatv_requests')) || [];
+        requests.splice(index, 1);
+        localStorage.setItem('priismatv_requests', JSON.stringify(requests));
+        this.renderRequests();
+    }
+
+    // ═══════ CONTINUE WATCHING ═══════
+    renderContinueWatching() {
+        const history = JSON.parse(localStorage.getItem('priismatv_history')) || [];
+        const section = document.getElementById('continueWatchingSection');
+        if (history.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+        section.style.display = 'block';
+        const recent = history.slice(0, 10);
+        const items = recent.map(h => this.content.find(c => c.id === h.id)).filter(Boolean);
+        const row = document.getElementById('continueWatchingRow');
+        row.innerHTML = items.map(item => this.createCard(item)).join('');
+        this.bindCardEvents(row);
+    }
+
+    // ═══════ RATING SYSTEM ═══════
+    rateItem(itemId, rating) {
+        let ratings = JSON.parse(localStorage.getItem('priismatv_ratings')) || {};
+        ratings[itemId] = rating;
+        localStorage.setItem('priismatv_ratings', JSON.stringify(ratings));
+        this.showToast(`Rated ${rating}/5 stars!`, 'success');
+    }
+
+    getItemRating(itemId) {
+        const ratings = JSON.parse(localStorage.getItem('priismatv_ratings')) || {};
+        return ratings[itemId] || 0;
     }
 
     // ═══════ CHAT SYSTEM ═══════
