@@ -703,6 +703,20 @@ class PriismaTv {
 
     playContent(item) {
         this.addToHistory(item);
+        
+        // For anime, ask Sub or Dub
+        if (item.type === 'anime') {
+            const choice = confirm('Click OK for DUBBED (English)\nClick Cancel for SUBBED (Japanese + subtitles)');
+            if (choice) {
+                // Dubbed - open aniwaves.ru (only site with reliable dubs)
+                const title = encodeURIComponent(item.title);
+                window.open(`https://aniwaves.ru/search?keyword=${title}`, '_blank');
+                this.showToast('Opening Aniwave (Dubbed) — select DUB version there', 'info');
+                return;
+            }
+            // Subbed - continue with embed servers below
+        }
+
         if (!item.video && !item.magnet) {
             // Try to generate a VidSrc link on-the-fly using TMDB
             this.autoStreamFromTitle(item);
