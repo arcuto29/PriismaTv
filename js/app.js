@@ -566,30 +566,30 @@ class PriismaTv {
         this.closeModal();
     }
 
-    // Embed sources that ACTUALLY work inline (no X-Frame-Options blocking)
+    // Embed sources - using BOTH IMDB and TMDB IDs for maximum compatibility
     getEmbedSources(imdbId, type, season = 1, episode = 1) {
         const isMovie = type === 'movie';
-        const isAnime = this.currentDetailItem?.type === 'anime';
+        const tmdbId = this.currentDetailItem?.tmdbId || '';
         const s = season;
         const e = episode;
 
         if (isMovie) {
             return [
-                { name: 'Server 1', url: `https://vidsrc.cc/v2/embed/movie/${imdbId}` },
-                { name: 'Server 2', url: `https://vidsrc.wiki/embed/movie/${imdbId}` },
-                { name: 'Server 3', url: `https://vidsrc.lol/embed/movie/${imdbId}` },
-                { name: 'Server 4', url: `https://www.2embed.skin/embed/${imdbId}` },
-                { name: 'Server 5', url: `https://vidsrc.wtf/api/2/movie/?id=${imdbId}` },
+                { name: 'Server 1', url: `https://vidsrc.in/embed/movie/${imdbId}` },
+                { name: 'Server 2', url: tmdbId ? `https://vidsrc.wiki/embed/movie/${tmdbId}` : `https://vidsrc.wiki/embed/movie/${imdbId}` },
+                { name: 'Server 3', url: `https://vidsrc.mov/embed/movie/${imdbId}` },
+                { name: 'Server 4', url: `https://player.autoembed.cc/embed/movie/${imdbId}` },
+                { name: 'Server 5', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1` },
             ];
         }
 
         // TV Shows & Anime - with season/episode
         return [
-            { name: 'Server 1', url: `https://vidsrc.cc/v2/embed/tv/${imdbId}/${s}/${e}` },
-            { name: 'Server 2', url: `https://vidsrc.wiki/embed/tv/${imdbId}/${s}/${e}` },
-            { name: 'Server 3', url: `https://vidsrc.lol/embed/tv/${imdbId}/${s}/${e}` },
-            { name: 'Server 4', url: `https://www.2embed.skin/embedtv/${imdbId}&s=${s}&e=${e}` },
-            { name: 'Server 5', url: `https://vidsrc.wtf/api/2/tv/?id=${imdbId}&s=${s}&e=${e}` },
+            { name: 'Server 1', url: `https://vidsrc.in/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 2', url: tmdbId ? `https://vidsrc.wiki/embed/tv/${tmdbId}/${s}/${e}` : `https://vidsrc.wiki/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 3', url: `https://vidsrc.mov/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 4', url: `https://player.autoembed.cc/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 5', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}` },
         ];
     }
 
@@ -669,10 +669,10 @@ class PriismaTv {
                 return;
             }
 
-            // Generate streaming URL - uses vidsrc.cc which embeds cleanly
+            // Generate streaming URL - uses vidsrc.in which embeds cleanly
             const streamUrl = searchType === 'movie'
-                ? `https://vidsrc.cc/v2/embed/movie/${imdbId}`
-                : `https://vidsrc.cc/v2/embed/tv/${imdbId}/1/1`;
+                ? `https://vidsrc.in/embed/movie/${imdbId}`
+                : `https://vidsrc.in/embed/tv/${imdbId}/1/1`;
 
             // Save it to the item so it doesn't have to look it up again
             item.video = streamUrl;
@@ -893,10 +893,10 @@ class PriismaTv {
                 const imdbId = ids.imdb_id;
 
                 if (imdbId) {
-                    // Use vidsrc.cc - works inline without ads
+                    // Use vidsrc.in - confirmed working embed API
                     const streamUrl = type === 'movie'
-                        ? `https://vidsrc.cc/v2/embed/movie/${imdbId}`
-                        : `https://vidsrc.cc/v2/embed/tv/${imdbId}/1/1`;
+                        ? `https://vidsrc.in/embed/movie/${imdbId}`
+                        : `https://vidsrc.in/embed/tv/${imdbId}/1/1`;
                     document.getElementById('contentVideo').value = streamUrl;
 
                     // Also fetch trailer
