@@ -1608,3 +1608,38 @@ img[loading="lazy"] {
 .hero-content {
     transform: translateZ(30px);
 }
+
+
+/* ═══════ LIGHT MODE - ALL PAGES WHITE ═══════ */
+body.light-mode .main-content {
+    background: var(--bg-primary);
+}
+body.light-mode .page-container {
+    background: var(--bg-primary);
+}
+body.light-mode #page-movies,
+body.light-mode #page-anime,
+body.light-mode #page-tvshows,
+body.light-mode #page-watchlist,
+body.light-mode #page-favorites,
+body.light-mode #page-friends,
+body.light-mode #page-history,
+body.light-mode #page-collections,
+body.light-mode #page-challenges,
+body.light-mode #page-requests,
+body.light-mode #page-admin,
+body.light-mode #page-watchtogether,
+body.light-mode #page-youtube,
+body.light-mode #page-twitch {
+    background: var(--bg-primary);
+}
+body.light-mode .friends-container,
+body.light-mode .admin-container {
+    background: transparent;
+}
+body.light-mode .friends-section,
+body.light-mode .admin-form,
+body.light-mode .admin-panel {
+    background: #ffffff;
+    border-color: rgba(0,0,0,0.08);
+}
