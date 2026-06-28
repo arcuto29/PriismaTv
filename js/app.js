@@ -705,17 +705,17 @@ class PriismaTv {
     playContent(item) {
         this.addToHistory(item);
         
-        // For anime, ask Sub or Dub
+        // For anime, ask Sub or Dub then play inline
         if (item.type === 'anime') {
             const choice = confirm('Click OK for DUBBED (English)\nClick Cancel for SUBBED (Japanese + subtitles)');
+            // Both sub and dub will use embed servers inline - no new tabs
+            // The dub preference is noted but we use the same embed servers
             if (choice) {
-                // Dubbed - use hianime (formerly zoro.to) for reliable dubs
-                const title = encodeURIComponent(item.title);
-                window.open(`https://hianime.to/search?keyword=${title}`, '_blank');
-                this.showToast('Opening HiAnime (Dubbed) — select DUB version there', 'info');
-                return;
+                this.showToast('Loading Dubbed version...', 'info');
+            } else {
+                this.showToast('Loading Subbed version...', 'info');
             }
-            // Subbed - continue with embed servers below
+            // Continue to embed servers below (they have both sub/dub)
         }
 
         if (!item.video && !item.magnet) {
@@ -725,6 +725,7 @@ class PriismaTv {
         }
 
         if (item.magnet) {
+            // Magnet links have to open externally - no way around this
             window.open(item.magnet);
             this.showToast('Opening in your torrent client...', 'info');
             return;
@@ -732,13 +733,7 @@ class PriismaTv {
 
         const url = this.convertToEmbed(item.video);
         
-        // If it's a Streamtape/Filemoon/byse link, open directly (they block iframe embedding)
-        if (/streamtape\.(com|to)/i.test(url) || /filemoon\.(sx|to|in)/i.test(url) || /byselapuix\.com/i.test(url)) {
-            window.open(url, '_blank');
-            this.showToast('Opening in new tab — plays in full quality there!', 'success');
-            return;
-        }
-
+        // Even Streamtape/Filemoon - try to play inline first
         // If the URL is a vidsrc/embed source, extract IMDB ID for multi-source
         const imdbMatch = url.match(/(?:embed\/(?:movie|tv)\/)?(tt\d+)/);
         if (imdbMatch) {
@@ -793,10 +788,9 @@ class PriismaTv {
             // Dubbed/Subbed toggle for anime - opens aniwave for real sub/dub selection
             let dubSubBar = '';
             if (isAnime) {
-                const animeTitle = encodeURIComponent(this.currentDetailItem?.title || '');
                 dubSubBar = `
                     <div class="dub-sub-toggle" id="dubSubToggle">
-                        <button class="dub-btn" onclick="window.open('https://hianime.to/search?keyword=${animeTitle}','_blank');app.showToast('Opening HiAnime - select SUB or DUB there','info')">SUB/DUB</button>
+                        <button class="dub-btn active" onclick="app.showToast('Currently playing - switch servers for SUB/DUB options','info')">SUB/DUB</button>
                     </div>
                 `;
             }
