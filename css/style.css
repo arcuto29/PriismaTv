@@ -1143,9 +1143,15 @@ body.light-mode .hero-video-bg {
 body.light-mode .hero {
     background-color: #000000;
     background-image: url('../220034 (1).gif');
-    background-size: contain;
-    background-position: center right;
+    background-size: cover;
+    background-position: center top;
     background-repeat: no-repeat;
+}
+body.light-mode .hero-video-bg {
+    display: none;
+}
+body.light-mode .fog-layer {
+    display: none;
 }
 body.light-mode .hero::after {
     background: linear-gradient(to top, var(--bg-primary) 0%, rgba(0,0,0,0.7) 30%, rgba(0,0,0,0.3) 60%, transparent 100%);
