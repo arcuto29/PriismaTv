@@ -1,94 +1,163 @@
-/* PriismaTv — Animations
-   Purpose-driven motion only. Every animation earns its place. */
+/* PriismaTv — Motion Design
+   Purposeful, premium, alive. Not flashy. */
 
-/* ═══════ 1. CARD ENTRANCE ═══════ */
+/* ═══════ CARD ENTRANCE ═══════ */
 .content-card {
-    animation: cardIn 0.4s ease both;
+    animation: cardIn 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) both;
 }
 .content-card:nth-child(1) { animation-delay: 0s; }
-.content-card:nth-child(2) { animation-delay: 0.04s; }
-.content-card:nth-child(3) { animation-delay: 0.08s; }
-.content-card:nth-child(4) { animation-delay: 0.12s; }
-.content-card:nth-child(5) { animation-delay: 0.16s; }
-.content-card:nth-child(6) { animation-delay: 0.2s; }
-.content-card:nth-child(7) { animation-delay: 0.24s; }
-.content-card:nth-child(8) { animation-delay: 0.28s; }
-.content-card:nth-child(9) { animation-delay: 0.32s; }
-.content-card:nth-child(10) { animation-delay: 0.36s; }
+.content-card:nth-child(2) { animation-delay: 0.03s; }
+.content-card:nth-child(3) { animation-delay: 0.06s; }
+.content-card:nth-child(4) { animation-delay: 0.09s; }
+.content-card:nth-child(5) { animation-delay: 0.12s; }
+.content-card:nth-child(6) { animation-delay: 0.15s; }
+.content-card:nth-child(7) { animation-delay: 0.18s; }
+.content-card:nth-child(8) { animation-delay: 0.21s; }
+.content-card:nth-child(9) { animation-delay: 0.24s; }
+.content-card:nth-child(10) { animation-delay: 0.27s; }
 
 @keyframes cardIn {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* ═══════ 2. PAGE TRANSITION ═══════ */
+/* ═══════ PAGE TRANSITION ═══════ */
 .page.active {
-    animation: pageIn 0.35s ease;
+    animation: pageIn 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
-
 @keyframes pageIn {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* ═══════ 3. MODAL ═══════ */
+/* ═══════ MODAL ═══════ */
 .modal.active {
-    animation: overlayIn 0.2s ease;
+    animation: overlayIn 0.25s ease;
 }
 .modal.active .modal-content {
-    animation: modalIn 0.3s cubic-bezier(0.2, 0, 0.13, 1);
+    animation: modalIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 @keyframes overlayIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
 @keyframes modalIn {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* ═══════ 4. TOAST ═══════ */
+/* ═══════ TOAST ═══════ */
 .toast {
-    animation: toastIn 0.3s ease;
+    animation: toastIn 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
-
 @keyframes toastIn {
-    from { opacity: 0; transform: translateX(24px); }
+    from { opacity: 0; transform: translateX(20px); }
     to { opacity: 1; transform: translateX(0); }
 }
 
-/* ═══════ 5. HERO TEXT GRADIENT ═══════ */
+/* ═══════ HERO TEXT ═══════ */
 .hero-content h1 {
     background: linear-gradient(
         to right,
-        #ffffff 20%,
-        #00d4ff 40%,
-        #6c5ce7 60%,
-        #ffffff 80%
+        #ffffff 0%,
+        #ffffff 30%,
+        #00d4ff 45%,
+        #ffffff 60%,
+        #ffffff 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: textShift 8s linear infinite;
+    animation: textShimmer 10s ease-in-out infinite;
+}
+@keyframes textShimmer {
+    0%, 100% { background-position: 200% center; }
+    50% { background-position: -200% center; }
 }
 
-@keyframes textShift {
-    to { background-position: -200% center; }
+/* ═══════ CARD HOVER GLOW ═══════ */
+.content-card::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(108,92,231,0.1));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
+    filter: blur(8px);
+    pointer-events: none;
+}
+.content-card:hover::after {
+    opacity: 1;
 }
 
-/* ═══════ 6. BUTTON & INTERACTIVE TRANSITIONS ═══════ */
-.btn,
-.btn-primary,
-.filter-select,
-.nav-links a,
-.notification-btn,
-.theme-toggle {
-    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+/* ═══════ NAV ACTIVE INDICATOR ═══════ */
+.nav-links a.active::before {
+    transform: scaleY(1);
+    transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* ═══════ LOGO SUBTLE GLOW ═══════ */
+.logo i {
+    filter: drop-shadow(0 0 8px rgba(0,212,255,0.4));
+    transition: filter 0.3s ease;
+}
+.sidebar:hover .logo i {
+    filter: drop-shadow(0 0 12px rgba(0,212,255,0.6));
+}
+
+/* ═══════ INTERACTIVE FEEDBACK ═══════ */
+.btn, .filter-select, .nav-links a, .notification-btn, .theme-toggle {
+    transition: transform 0.2s ease, background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.btn-primary:hover {
+    box-shadow: 0 4px 16px rgba(0, 212, 255, 0.25);
 }
 .btn-primary:active {
     transform: scale(0.97);
+    box-shadow: 0 2px 8px rgba(0, 212, 255, 0.15);
+}
+
+/* ═══════ CARD POSTER DEPTH ON HOVER ═══════ */
+.content-card:hover .card-poster {
+    box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(0, 212, 255, 0.06);
+}
+
+/* ═══════ SECTION FADE ON SCROLL ═══════ */
+.content-section {
+    animation: sectionIn 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+.content-section:nth-child(2) { animation-delay: 0.05s; }
+.content-section:nth-child(3) { animation-delay: 0.1s; }
+.content-section:nth-child(4) { animation-delay: 0.15s; }
+.content-section:nth-child(5) { animation-delay: 0.2s; }
+
+@keyframes sectionIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ═══════ SEARCH FOCUS ═══════ */
+.search-container input:focus {
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.08), 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* ═══════ GLASS PANEL SUBTLE HIGHLIGHT ═══════ */
+.admin-panel, .friends-section {
+    position: relative;
+    overflow: hidden;
+}
+.admin-panel::after, .friends-section::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 20%, rgba(0,212,255,0.12) 50%, transparent 80%);
+    pointer-events: none;
 }
 
 /* ═══════ REDUCED MOTION ═══════ */
