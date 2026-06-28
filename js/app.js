@@ -709,10 +709,10 @@ class PriismaTv {
         if (item.type === 'anime') {
             const choice = confirm('Click OK for DUBBED (English)\nClick Cancel for SUBBED (Japanese + subtitles)');
             if (choice) {
-                // Dubbed - open aniwaves.ru (only site with reliable dubs)
+                // Dubbed - use hianime (formerly zoro.to) for reliable dubs
                 const title = encodeURIComponent(item.title);
-                window.open(`https://aniwaves.ru/search?keyword=${title}`, '_blank');
-                this.showToast('Opening Aniwave (Dubbed) — select DUB version there', 'info');
+                window.open(`https://hianime.to/search?keyword=${title}`, '_blank');
+                this.showToast('Opening HiAnime (Dubbed) — select DUB version there', 'info');
                 return;
             }
             // Subbed - continue with embed servers below
@@ -796,7 +796,7 @@ class PriismaTv {
                 const animeTitle = encodeURIComponent(this.currentDetailItem?.title || '');
                 dubSubBar = `
                     <div class="dub-sub-toggle" id="dubSubToggle">
-                        <button class="dub-btn" onclick="window.open('https://aniwaves.ru/search?keyword=${animeTitle}','_blank');app.showToast('Opening Aniwave - select SUB or DUB there','info')">SUB/DUB</button>
+                        <button class="dub-btn" onclick="window.open('https://hianime.to/search?keyword=${animeTitle}','_blank');app.showToast('Opening HiAnime - select SUB or DUB there','info')">SUB/DUB</button>
                     </div>
                 `;
             }
@@ -837,17 +837,19 @@ class PriismaTv {
 
         if (isMovie) {
             return [
-                { name: 'Server 1', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&quality=1080p` },
-                { name: 'Server 2', url: `https://autoembed.co/movie/imdb/${imdbId}` },
-                { name: 'Server 3', url: `https://www.2embed.cc/embed/${imdbId}` },
+                { name: 'Server 1', url: `https://vidsrc.xyz/embed/movie/${imdbId}` },
+                { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&quality=1080p` },
+                { name: 'Server 3', url: `https://autoembed.co/movie/imdb/${imdbId}` },
+                { name: 'Server 4', url: `https://www.2embed.cc/embed/${imdbId}` },
             ];
         }
 
         // TV Shows & Anime
         return [
-            { name: 'Server 1', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}&quality=1080p` },
-            { name: 'Server 2', url: `https://autoembed.co/tv/imdb/${imdbId}-${s}-${e}` },
-            { name: 'Server 3', url: `https://www.2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
+            { name: 'Server 1', url: `https://vidsrc.xyz/embed/tv/${imdbId}/${s}/${e}` },
+            { name: 'Server 2', url: `https://multiembed.mov/?video_id=${imdbId}&tmdb=1&s=${s}&e=${e}&quality=1080p` },
+            { name: 'Server 3', url: `https://autoembed.co/tv/imdb/${imdbId}-${s}-${e}` },
+            { name: 'Server 4', url: `https://www.2embed.cc/embedtv/${imdbId}&s=${s}&e=${e}` },
         ];
     }
 
