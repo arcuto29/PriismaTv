@@ -2067,7 +2067,6 @@ class PriismaTv {
     renderCalendar() {
         const releases = [
             // July 2025
-            { title: 'One Piece Episode 1120+', date: '2025-07-06', type: 'anime', status: 'airing' },
             { title: 'My Hero Academia Season 8', date: '2025-07-05', type: 'anime', status: 'upcoming' },
             { title: 'Jujutsu Kaisen: Hidden Inventory Movie', date: '2025-07-04', type: 'anime', status: 'upcoming' },
             // August 2025
@@ -2085,19 +2084,27 @@ class PriismaTv {
             { title: 'Blade (MCU)', date: '2025-11-07', type: 'movie', status: 'upcoming' },
             // December 2025
             { title: 'Avatar 3', date: '2025-12-19', type: 'movie', status: 'upcoming' },
-            // January 2026
+            // 2026
             { title: 'Vinland Saga Season 3', date: '2026-01-15', type: 'anime', status: 'upcoming' },
             { title: 'The Witcher Season 5', date: '2026-03-01', type: 'tvshow', status: 'upcoming' },
-            // 2026
             { title: 'Bleach TYBW Part 4', date: '2026-01-01', type: 'anime', status: 'upcoming' },
             { title: 'Spy x Family Season 3', date: '2026-04-01', type: 'anime', status: 'upcoming' },
             { title: 'Avengers: Doomsday', date: '2026-05-01', type: 'movie', status: 'upcoming' },
+            { title: 'Avengers: Secret Wars', date: '2027-05-07', type: 'movie', status: 'upcoming' },
+            { title: 'One Piece Live Action Season 2', date: '2026-06-01', type: 'tvshow', status: 'upcoming' },
+            { title: 'Mob Psycho 100 Movie', date: '2026-02-01', type: 'anime', status: 'upcoming' },
+            { title: 'Naruto: The Movie (Live Action)', date: '2026-12-01', type: 'movie', status: 'upcoming' },
+            { title: 'Spider-Man 4', date: '2026-07-24', type: 'movie', status: 'upcoming' },
+            { title: 'Fantastic Four: First Steps', date: '2025-07-25', type: 'movie', status: 'upcoming' },
         ];
 
-        // Group by month
+        // Only show FUTURE releases
+        const now = new Date();
+        const upcoming = releases.filter(r => new Date(r.date) > now);
+
         const grouped = {};
-        releases.sort((a, b) => new Date(a.date) - new Date(b.date));
-        releases.forEach(r => {
+        upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
+        upcoming.forEach(r => {
             const d = new Date(r.date);
             const key = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
             if (!grouped[key]) grouped[key] = [];
@@ -2107,7 +2114,6 @@ class PriismaTv {
         const grid = document.getElementById('calendarGrid');
         const typeColors = { anime: '#ff64c8', movie: '#00d4ff', tvshow: '#10b981' };
         const typeIcons = { anime: 'dragon', movie: 'film', tvshow: 'tv' };
-        const now = new Date();
 
         grid.innerHTML = Object.entries(grouped).map(([month, items]) => `
             <div style="background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:28px;transition:all 0.3s;">
