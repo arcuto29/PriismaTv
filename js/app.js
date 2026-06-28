@@ -137,6 +137,7 @@ class PriismaTv {
             case 'requests': this.renderRequests(); break;
             case 'quiz': this.renderQuiz(); break;
             case 'challenges': this.renderChallenges(); break;
+            case 'calendar': this.renderCalendar(); break;
         }
 
         // Close mobile sidebar
@@ -2060,6 +2061,80 @@ class PriismaTv {
                 </div>
             `;
         }).join('');
+    }
+
+    // ═══════ RELEASE CALENDAR ═══════
+    renderCalendar() {
+        const releases = [
+            // July 2025
+            { title: 'One Piece Episode 1120+', date: '2025-07-06', type: 'anime', status: 'airing' },
+            { title: 'My Hero Academia Season 8', date: '2025-07-05', type: 'anime', status: 'upcoming' },
+            { title: 'Jujutsu Kaisen: Hidden Inventory Movie', date: '2025-07-04', type: 'anime', status: 'upcoming' },
+            // August 2025
+            { title: 'Dragon Ball Daima Part 2', date: '2025-08-01', type: 'anime', status: 'upcoming' },
+            { title: 'Thunderbolts*', date: '2025-08-02', type: 'movie', status: 'upcoming' },
+            // September 2025
+            { title: 'Attack on Titan: THE LAST ATTACK', date: '2025-09-13', type: 'anime', status: 'upcoming' },
+            { title: 'Demon Slayer: Infinity Castle (Movie)', date: '2025-09-26', type: 'anime', status: 'upcoming' },
+            // October 2025
+            { title: 'Solo Leveling Season 3', date: '2025-10-01', type: 'anime', status: 'upcoming' },
+            { title: 'Stranger Things Season 5', date: '2025-10-15', type: 'tvshow', status: 'upcoming' },
+            { title: 'Chainsaw Man Season 2', date: '2025-10-01', type: 'anime', status: 'upcoming' },
+            // November 2025
+            { title: 'Wicked Part Two', date: '2025-11-21', type: 'movie', status: 'upcoming' },
+            { title: 'Blade (MCU)', date: '2025-11-07', type: 'movie', status: 'upcoming' },
+            // December 2025
+            { title: 'Avatar 3', date: '2025-12-19', type: 'movie', status: 'upcoming' },
+            // January 2026
+            { title: 'Vinland Saga Season 3', date: '2026-01-15', type: 'anime', status: 'upcoming' },
+            { title: 'The Witcher Season 5', date: '2026-03-01', type: 'tvshow', status: 'upcoming' },
+            // 2026
+            { title: 'Bleach TYBW Part 4', date: '2026-01-01', type: 'anime', status: 'upcoming' },
+            { title: 'Spy x Family Season 3', date: '2026-04-01', type: 'anime', status: 'upcoming' },
+            { title: 'Avengers: Doomsday', date: '2026-05-01', type: 'movie', status: 'upcoming' },
+        ];
+
+        // Group by month
+        const grouped = {};
+        releases.sort((a, b) => new Date(a.date) - new Date(b.date));
+        releases.forEach(r => {
+            const d = new Date(r.date);
+            const key = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(r);
+        });
+
+        const grid = document.getElementById('calendarGrid');
+        const typeColors = { anime: '#ff64c8', movie: '#00d4ff', tvshow: '#10b981' };
+        const typeIcons = { anime: 'dragon', movie: 'film', tvshow: 'tv' };
+        const now = new Date();
+
+        grid.innerHTML = Object.entries(grouped).map(([month, items]) => `
+            <div style="background:var(--bg-secondary);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:28px;transition:all 0.3s;">
+                <h3 style="margin-bottom:18px;font-size:1.1rem;display:flex;align-items:center;gap:10px;">
+                    <i class="fas fa-calendar" style="color:var(--accent-primary);"></i> ${month}
+                </h3>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    ${items.map(item => {
+                        const d = new Date(item.date);
+                        const isPast = d < now;
+                        const daysLeft = Math.ceil((d - now) / (1000*60*60*24));
+                        return `
+                            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--bg-tertiary);border-radius:var(--radius-md);border-left:3px solid ${typeColors[item.type]};${isPast ? 'opacity:0.5;' : ''}">
+                                <i class="fas fa-${typeIcons[item.type]}" style="color:${typeColors[item.type]};font-size:1rem;width:20px;text-align:center;"></i>
+                                <div style="flex:1;">
+                                    <strong style="font-size:0.88rem;">${item.title}</strong>
+                                    <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px;">${d.toLocaleDateString('en-US', {month:'short',day:'numeric'})}</div>
+                                </div>
+                                <span style="font-size:0.7rem;padding:3px 8px;border-radius:4px;background:${isPast ? 'rgba(255,255,255,0.05)' : daysLeft < 30 ? 'rgba(255,200,0,0.15);color:#ffd700' : 'rgba(0,212,255,0.1);color:var(--accent-primary)'};font-weight:600;">
+                                    ${isPast ? 'Released' : daysLeft + 'd'}
+                                </span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `).join('');
     }
 
     // ═══════ QUICK RESUME ═══════
