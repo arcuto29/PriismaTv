@@ -1,378 +1,101 @@
-/* ═══════════════════════════════════════════════════════════
-   PriismaTv - ULTRA PREMIUM Animations & Effects
-   Matching Framer Motion / GSAP / Aceternity UI aesthetics
-═══════════════════════════════════════════════════════════ */
+/* PriismaTv — Animations
+   Purpose-driven motion only. Every animation earns its place. */
 
-/* ═══════ CARD ENTRANCE (Framer Motion style stagger) ═══════ */
+/* ═══════ 1. CARD ENTRANCE ═══════ */
 .content-card {
-    animation: cardReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-    will-change: transform, opacity;
+    animation: cardIn 0.4s ease both;
 }
-.content-card:nth-child(1) { animation-delay: 0.02s; }
+.content-card:nth-child(1) { animation-delay: 0s; }
 .content-card:nth-child(2) { animation-delay: 0.04s; }
-.content-card:nth-child(3) { animation-delay: 0.06s; }
-.content-card:nth-child(4) { animation-delay: 0.08s; }
-.content-card:nth-child(5) { animation-delay: 0.1s; }
-.content-card:nth-child(6) { animation-delay: 0.12s; }
-.content-card:nth-child(7) { animation-delay: 0.14s; }
-.content-card:nth-child(8) { animation-delay: 0.16s; }
-.content-card:nth-child(9) { animation-delay: 0.18s; }
-.content-card:nth-child(10) { animation-delay: 0.2s; }
+.content-card:nth-child(3) { animation-delay: 0.08s; }
+.content-card:nth-child(4) { animation-delay: 0.12s; }
+.content-card:nth-child(5) { animation-delay: 0.16s; }
+.content-card:nth-child(6) { animation-delay: 0.2s; }
+.content-card:nth-child(7) { animation-delay: 0.24s; }
+.content-card:nth-child(8) { animation-delay: 0.28s; }
+.content-card:nth-child(9) { animation-delay: 0.32s; }
+.content-card:nth-child(10) { animation-delay: 0.36s; }
 
-@keyframes cardReveal {
-    from { opacity: 0; transform: translateY(50px) scale(0.9) rotateX(8deg); filter: blur(6px); }
-    to { opacity: 1; transform: translateY(0) scale(1) rotateX(0); filter: blur(0); }
-}
-
-/* ═══════ ACETERNITY SPOTLIGHT CARD EFFECT ═══════ */
-.content-card {
-    position: relative;
-    overflow: visible;
-}
-.content-card::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: var(--radius-lg);
-    background: conic-gradient(from var(--angle, 0deg), transparent 60%, #00d4ff 75%, #6c5ce7 85%, transparent 95%);
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    z-index: -1;
-    filter: blur(6px);
-    animation: rotateBorder 4s linear infinite;
-}
-.content-card:hover::before {
-    opacity: 0.5;
-}
-@property --angle {
-    syntax: '<angle>';
-    initial-value: 0deg;
-    inherits: false;
-}
-@keyframes rotateBorder {
-    to { --angle: 360deg; }
-}
-
-/* ═══════ MAGIC UI AURORA GLOW ═══════ */
-.hero::after {
-    animation: auroraShift 8s ease-in-out infinite alternate;
-}
-@keyframes auroraShift {
-    0% { opacity: 0.85; }
-    50% { opacity: 0.9; }
-    100% { opacity: 0.85; }
-}
-
-/* ═══════ GSAP-STYLE SCROLL REVEAL ═══════ */
-.content-section {
-    animation: sectionSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-}
-.content-section:nth-child(1) { animation-delay: 0s; }
-.content-section:nth-child(2) { animation-delay: 0.1s; }
-.content-section:nth-child(3) { animation-delay: 0.2s; }
-.content-section:nth-child(4) { animation-delay: 0.3s; }
-.content-section:nth-child(5) { animation-delay: 0.4s; }
-
-@keyframes sectionSlideUp {
-    from { opacity: 0; transform: translateY(60px); }
+@keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* ═══════ FRAMER MOTION LOGO SPRING ═══════ */
-.logo i {
-    animation: logoSpring 3s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
-}
-@keyframes logoSpring {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(0,212,255,0.4)); }
-    15% { transform: scale(1.15); filter: drop-shadow(0 0 20px rgba(0,212,255,0.8)) drop-shadow(0 0 40px rgba(108,92,231,0.4)); }
-    30% { transform: scale(0.95); }
-    45% { transform: scale(1.05); }
-    60% { transform: scale(1); }
+/* ═══════ 2. PAGE TRANSITION ═══════ */
+.page.active {
+    animation: pageIn 0.35s ease;
 }
 
-/* ═══════ ACETERNITY HERO TEXT GRADIENT ANIMATION ═══════ */
+@keyframes pageIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════ 3. MODAL ═══════ */
+.modal.active {
+    animation: overlayIn 0.2s ease;
+}
+.modal.active .modal-content {
+    animation: modalIn 0.3s cubic-bezier(0.2, 0, 0.13, 1);
+}
+
+@keyframes overlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* ═══════ 4. TOAST ═══════ */
+.toast {
+    animation: toastIn 0.3s ease;
+}
+
+@keyframes toastIn {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* ═══════ 5. HERO TEXT GRADIENT ═══════ */
 .hero-content h1 {
     background: linear-gradient(
         to right,
-        #ffffff 0%,
         #ffffff 20%,
-        #00d4ff 30%,
-        #6c5ce7 40%,
-        #00d4ff 50%,
-        #ffffff 60%,
-        #ffffff 100%
+        #00d4ff 40%,
+        #6c5ce7 60%,
+        #ffffff 80%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-    animation: textGradient 4s linear infinite;
+    animation: textShift 8s linear infinite;
 }
-@keyframes textGradient {
+
+@keyframes textShift {
     to { background-position: -200% center; }
 }
 
-/* ═══════ MAGIC UI METEOR SHOWER (background accents) ═══════ */
-.page-container::before {
-    content: '';
-    position: fixed;
-    width: 2px; height: 80px;
-    background: linear-gradient(to bottom, transparent, #00d4ff, transparent);
-    top: -80px; right: 20%;
-    opacity: 0;
-    animation: meteor 6s ease-in infinite;
-    pointer-events: none;
-    z-index: 0;
-}
-.page-container::after {
-    content: '';
-    position: fixed;
-    width: 1px; height: 60px;
-    background: linear-gradient(to bottom, transparent, #6c5ce7, transparent);
-    top: -60px; right: 40%;
-    opacity: 0;
-    animation: meteor 8s ease-in 3s infinite;
-    pointer-events: none;
-    z-index: 0;
-}
-@keyframes meteor {
-    0% { opacity: 0; transform: translateY(0) rotate(15deg); }
-    5% { opacity: 0.6; }
-    30% { opacity: 0; transform: translateY(100vh) rotate(15deg); }
-    100% { opacity: 0; transform: translateY(100vh) rotate(15deg); }
-}
-
-/* ═══════ SHADCN-STYLE BUTTON HOVER ═══════ */
-.btn-primary {
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.btn-primary::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.05) 50%, transparent 55%);
-    transform: translateX(-120%);
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.btn-primary:hover::after {
-    transform: translateX(120%);
+/* ═══════ 6. BUTTON & INTERACTIVE TRANSITIONS ═══════ */
+.btn,
+.btn-primary,
+.filter-select,
+.nav-links a,
+.notification-btn,
+.theme-toggle {
+    transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
 }
 .btn-primary:active {
     transform: scale(0.97);
 }
 
-/* ═══════ ACETERNITY GLOWING BORDER NAV ═══════ */
-.nav-links a.active {
-    position: relative;
-}
-.nav-links a.active::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: var(--radius-md);
-    background: radial-gradient(ellipse at 20% 50%, rgba(0,212,255,0.1) 0%, transparent 70%);
-    pointer-events: none;
-    animation: navGlow 2s ease-in-out infinite alternate;
-}
-@keyframes navGlow {
-    from { opacity: 0.5; }
-    to { opacity: 1; }
-}
-
-/* ═══════ FRAMER MOTION MODAL ═══════ */
-.modal.active {
-    animation: modalFadeIn 0.3s ease;
-}
-.modal.active .modal-content {
-    animation: modalSpring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes modalFadeIn {
-    from { opacity: 0; backdrop-filter: blur(0); }
-    to { opacity: 1; backdrop-filter: blur(12px); }
-}
-@keyframes modalSpring {
-    from { transform: scale(0.85) translateY(40px); opacity: 0; }
-    to { transform: scale(1) translateY(0); opacity: 1; }
-}
-
-/* ═══════ MAGIC UI CARD TILT ON HOVER ═══════ */
-.content-card:hover {
-    transform: translateY(-12px) scale(1.04);
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.content-card:hover .card-poster {
-    box-shadow:
-        0 25px 60px rgba(0,0,0,0.5),
-        0 0 30px rgba(0,212,255,0.12),
-        inset 0 -2px 6px rgba(0,212,255,0.1);
-}
-
-/* ═══════ ACETERNITY TOAST ANIMATION ═══════ */
-.toast {
-    animation: toastSpring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    backdrop-filter: blur(20px);
-}
-@keyframes toastSpring {
-    from { transform: translateX(120%) scale(0.8) rotate(2deg); opacity: 0; }
-    50% { transform: translateX(-5%) scale(1.02) rotate(-0.5deg); }
-    to { transform: translateX(0) scale(1) rotate(0); opacity: 1; }
-}
-
-/* ═══════ EMBLA CAROUSEL STYLE SCROLL ═══════ */
-.content-row {
-    scroll-behavior: smooth;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-}
-.content-row > * {
-    scroll-snap-align: start;
-}
-
-/* ═══════ SEARCH FOCUS (Shadcn Input style) ═══════ */
-.search-container input:focus {
-    animation: inputFocus 0.3s ease forwards;
-}
-@keyframes inputFocus {
-    from { box-shadow: 0 0 0 0 rgba(0,212,255,0); }
-    to { box-shadow: 0 0 0 4px rgba(0,212,255,0.1), 0 0 20px rgba(0,212,255,0.15), 0 0 40px rgba(0,212,255,0.05); }
-}
-
-/* ═══════ NOTIFICATION PULSE (Framer Motion) ═══════ */
-.notif-badge {
-    animation: notifBounce 2s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
-}
-@keyframes notifBounce {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); box-shadow: 0 0 0 4px rgba(255,68,68,0.2); }
-}
-
-/* ═══════ AVATAR ROTATING RING (Magic UI) ═══════ */
-.avatar {
-    position: relative;
-}
-.avatar::after {
-    content: '';
-    position: absolute;
-    inset: -4px;
-    border-radius: 50%;
-    background: conic-gradient(from 0deg, #00d4ff, #6c5ce7, #ff64c8, #00d4ff);
-    z-index: -1;
-    animation: avatarSpin 3s linear infinite;
-    opacity: 0.7;
-}
-@keyframes avatarSpin {
-    to { transform: rotate(360deg); }
-}
-
-/* ═══════ HERO BADGE (Aceternity Shimmer) ═══════ */
-.hero-badge {
-    position: relative;
-    overflow: hidden;
-}
-.hero-badge::after {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    background: inherit;
-    filter: blur(12px);
-    opacity: 0.6;
-    z-index: -1;
-    animation: badgePulse 2s ease-in-out infinite;
-}
-@keyframes badgePulse {
-    0%, 100% { opacity: 0.4; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.1); }
-}
-
-/* ═══════ POSTER SHINE SWEEP (Magic UI) ═══════ */
-.card-poster::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        105deg,
-        transparent 30%,
-        rgba(255,255,255,0.04) 45%,
-        rgba(0,212,255,0.03) 50%,
-        transparent 60%
-    );
-    background-size: 250% 100%;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-}
-.content-card:hover .card-poster::after {
-    opacity: 1;
-    animation: posterSweep 1.2s ease;
-}
-@keyframes posterSweep {
-    from { background-position: 200% 0; }
-    to { background-position: -100% 0; }
-}
-
-/* ═══════ GLASS PANEL TOP SHIMMER ═══════ */
-.admin-panel, .friends-section, .quiz-card {
-    position: relative;
-    overflow: hidden;
-}
-.admin-panel::before, .friends-section::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -100%;
-    width: 60%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.5), rgba(108,92,231,0.3), transparent);
-    animation: glassShimmer 6s ease-in-out infinite;
-}
-@keyframes glassShimmer {
-    0%, 100% { left: -60%; }
-    50% { left: 100%; }
-}
-
-/* ═══════ PAGE TRANSITIONS (GSAP-style) ═══════ */
-.page.active {
-    animation: pageEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-@keyframes pageEnter {
-    from { opacity: 0; transform: translateY(30px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* ═══════ COUNTDOWN CARD PULSE ═══════ */
-.countdown-number {
-    animation: countPulse 2s ease-in-out infinite;
-}
-@keyframes countPulse {
-    0%, 100% { text-shadow: 0 0 8px rgba(0,212,255,0.3); }
-    50% { text-shadow: 0 0 20px rgba(0,212,255,0.6), 0 0 40px rgba(0,212,255,0.2); }
-}
-
-/* ═══════ SMOOTH HOVER TRANSITIONS ═══════ */
-.btn, .filter-select, .notification-btn, .theme-toggle, .nav-links a {
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* ═══════ SPIN WHEEL GLOW ═══════ */
-.random-pick-btn {
-    animation: wheelBtnFloat 3s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
-}
-@keyframes wheelBtnFloat {
-    0%, 100% { transform: translateX(-50%) translateY(0); box-shadow: 0 4px 25px rgba(0,212,255,0.3); }
-    50% { transform: translateX(-50%) translateY(-5px); box-shadow: 0 8px 35px rgba(0,212,255,0.5), 0 0 60px rgba(108,92,231,0.2); }
-}
-
-/* ═══════ CHAT TOGGLE BOUNCE ═══════ */
-.chat-toggle {
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.chat-toggle:hover {
-    transform: scale(1.15) rotate(-5deg);
-}
-
-/* ═══════ PERFORMANCE: GPU ACCELERATION ═══════ */
-.content-card, .btn-primary, .modal-content, .toast, .nav-links a, .hero-content h1 {
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-font-smoothing: antialiased;
+/* ═══════ REDUCED MOTION ═══════ */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
